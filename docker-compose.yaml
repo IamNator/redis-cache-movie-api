@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    command: [ "./api" ]
+    env_file:
+      - .env.sample
+    container_name: api
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - redis
+      - db
+
+  redis:
+    image: redis:5-alpine
+    container_name: redis
+    ports:
+      - 6379:6379
+    restart: always
+
+  db:
+    image: postgres:13-alpine
+    container_name: db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    restart: always
