@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"crypto/tls"
 	redis "github.com/go-redis/redis/v8"
 
 	"github.com/iamnator/movie-api/model"
@@ -20,12 +19,13 @@ func NewRedisCache(url string) (*RedisCache, error) {
 		return nil, err
 	}
 
-	opts.TLSConfig = &tls.Config{
-		InsecureSkipVerify: false,
-	}
+	//opts.TLSConfig = &tls.Config{
+	//	InsecureSkipVerify: true,
+	//
+	//}
 	client := redis.NewClient(opts)
 
-	if _, err := client.Ping(context.Background()).Result(); err != nil {
+	if _, err := client.Ping(context.TODO()).Result(); err != nil {
 		return nil, err
 	}
 
