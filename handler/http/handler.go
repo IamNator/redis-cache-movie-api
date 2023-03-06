@@ -67,8 +67,8 @@ func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64
 // @Accept json
 // @Param page query int false "Page number"
 // @Param pageSize query int false "Page size"
-// @Success 200 {object} model.GenericResponse{data=model.SignupResponse}
-// @Failure 400,502 {object} model.GenericResponse{error=model.ErrorResponse}
+// @Success 200 {object} model.GenericResponse{data=[]model.Movie}
+// @Failure 400,502 {object} model.GenericResponse{error=string}
 // @Router /movies [get]
 func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -100,8 +100,8 @@ func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 // @Param movie_id path int true "Movie ID"
 // @Param page query int false "Page number"
 // @Param pageSize query int false "Page size"
-// @Success 200 {object} model.GenericResponse{data=model.SignupResponse}
-// @Failure 400,502 {object} model.GenericResponse{error=model.ErrorResponse}
+// @Success 200 {object} model.GenericResponse{data=[]model.Character}
+// @Failure 400,502 {object} model.GenericResponse{error=string}
 // @Router /characters/{movie_id} [get]
 func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -139,8 +139,8 @@ func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Reques
 // @Param movie_id path int true "Movie ID"
 // @Param page query int false "Page number"
 // @Param pageSize query int false "Page size"
-// @Success 200 {object} model.GenericResponse{data=model.SignupResponse}
-// @Failure 400,502 {object} model.GenericResponse{error=model.ErrorResponse}
+// @Success 200 {object} model.GenericResponse{data=[]model.Comment}
+// @Failure 400,502 {object} model.GenericResponse{error=string}
 // @Router /comments/{movie_id} [get]
 func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -177,8 +177,8 @@ func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Param movie_id path int true "Movie ID"
 // @Param comment body model.Comment true "Comment"
-// @Success 201 {object} model.GenericResponse{data=model.SignupResponse}
-// @Failure 400,502 {object} model.GenericResponse{error=model.ErrorResponse}
+// @Success 201 {object} model.GenericResponse{data=model.Comment}
+// @Failure 400,502 {object} model.GenericResponse{error=string}
 // @Router /comments/{movie_id} [post]
 func (h handlers) addCommentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

@@ -1,0 +1,272 @@
+basePath: /api
+definitions:
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  model.Character:
+    properties:
+      gender:
+        type: string
+      height_cm:
+        type: integer
+      name:
+        type: string
+    type: object
+  model.Comment:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: string
+      ipv4Addr:
+        type: string
+      message:
+        type: string
+      swapiMovieID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  model.GenericResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      count:
+        example: 10
+        type: integer
+      data:
+        type: object
+      error:
+        type: object
+      message:
+        example: success
+        type: string
+    type: object
+  model.Movie:
+    properties:
+      comment_count:
+        type: integer
+      opening_crawl:
+        type: string
+      title:
+        type: string
+    type: object
+host: localhost:8500
+info:
+  contact:
+    email: natorverinumbe@gmail.com
+    name: Busha Support
+  description: This documents all rest endpoints exposed by this application.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Busha Movie API documentation
+  version: 1.0.0
+paths:
+  /characters/{movie_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get all characters in a movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Character'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Get all characters in a movie
+      tags:
+      - Movies
+  /comments/{movie_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get all comments for a movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Comment'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Get all comments for a movie
+      tags:
+      - Comments
+    post:
+      consumes:
+      - application/json
+      description: Add a comment to a movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: integer
+      - description: Comment
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/model.Comment'
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Comment'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Add a comment to a movie
+      tags:
+      - Movies
+  /movies:
+    get:
+      consumes:
+      - application/json
+      description: Get all movies
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Movie'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Get all movies
+      tags:
+      - Movies
+swagger: "2.0"

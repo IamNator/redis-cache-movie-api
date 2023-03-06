@@ -15,7 +15,8 @@ type (
 )
 
 type Movie struct {
-	Title        string `json:"title"`
+	SwapiMovieID int    `json:"id"`
+	Name         string `json:"name"`
 	OpeningCrawl string `json:"opening_crawl"`
 	CommentCount int64  `json:"comment_count"`
 }

@@ -47,7 +47,7 @@ func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 		}
 
 		movieList = append(movieList, model.Movie{
-			Title:        movie.Title,
+			Name:         movie.Title,
 			OpeningCrawl: movie.OpeningCrawl,
 			CommentCount: count,
 		})

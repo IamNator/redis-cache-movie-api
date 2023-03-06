@@ -21,7 +21,7 @@ func NewRedisCache(url string) (*RedisCache, error) {
 	}
 
 	opts.TLSConfig = &tls.Config{
-		InsecureSkipVerify: true,
+		InsecureSkipVerify: false,
 	}
 	client := redis.NewClient(opts)
 

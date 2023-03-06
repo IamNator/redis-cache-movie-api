@@ -34,7 +34,7 @@ func main() {
 
 	r := mux.NewRouter()
 
-	redisCache, err := cache.NewRedisCache("redis://busha_redis:6380")
+	redisCache, err := cache.NewRedisCache("redis://redis:6379")
 	if err != nil {
 		panic(err)
 	}
