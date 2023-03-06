@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/iamnator/movie-api/service"
 	"net/http"
 	"strconv"
@@ -21,18 +22,165 @@ func NewHandlers(srv service.IServices) handlers {
 	}
 }
 
+func Run(port string, r *mux.Router, srv service.IServices) error {
+
+	handler := NewHandlers(srv)
+
+	// documentation for developers
+	opts := middleware.SwaggerUIOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.SwaggerUI(opts, nil)
+	r.Handle("/docs", sh)
+
+	r.HandleFunc("/movies", handler.getMoviesHandler).Methods(http.MethodGet)
+	r.HandleFunc("/characters/{movie_id}", handler.getMovieCharacterHandler).Methods(http.MethodGet)
+
+	r.HandleFunc("/comments/{movie_id}", handler.addCommentHandler).Methods(http.MethodPost)
+	r.HandleFunc("/comments/{movie_id}", handler.getCommentHandler).Methods(http.MethodGet)
+
+	return http.ListenAndServe(":"+port, r)
+
+}
+
+func respondWithError(w http.ResponseWriter, code int, msg string, err ...interface{}) {
+	_ = json.NewEncoder(w).Encode(model.GenericResponse{
+		Error:   err,
+		Data:    nil,
+		Code:    code,
+		Message: msg,
+	})
+}
+
+func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64, data interface{}) {
+	_ = json.NewEncoder(w).Encode(model.GenericResponse{
+		Error:   nil,
+		Code:    code,
+		Message: msg,
+		Data:    data,
+		Count:   count,
+	})
+}
+
+// getMoviesHandler handles the request to get all movies
+// @Summary Get all movies
+// @Description Get all movies
+// @Tags Movies
+// @Accept json
+// @Param page query int false "Page number"
+// @Param pageSize query int false "Page size"
+// @Success 200 {object} model.GenericResponse{data=model.SignupResponse}
+// @Failure 400,502 {object} model.GenericResponse{error=model.ErrorResponse}
+// @Router /movies [get]
 func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 
-	movieList, err := h.service.GetMovies()
+	//get page and page size from query params
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
+	if err != nil {
+		pageSize = 10
+	}
+
+	movieList, _, err := h.service.GetMovies(page, pageSize)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error getting movies", err)
 		return
 	}
 
 	_ = json.NewEncoder(w).Encode(movieList)
 }
 
-func (h handlers) handleCommentHandler(w http.ResponseWriter, r *http.Request) {
+// getMovieCharacterHandler handles the request to get all characters in a movie
+// @Summary Get all characters in a movie
+// @Description Get all characters in a movie
+// @Tags Movies
+// @Accept json
+// @Param movie_id path int true "Movie ID"
+// @Param page query int false "Page number"
+// @Param pageSize query int false "Page size"
+// @Success 200 {object} model.GenericResponse{data=model.SignupResponse}
+// @Failure 400,502 {object} model.GenericResponse{error=model.ErrorResponse}
+// @Router /characters/{movie_id} [get]
+func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	movieID, err := strconv.Atoi(vars["movie_id"])
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid movie id", err)
+		return
+	}
+
+	//get page and page size from query params
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
+	if err != nil {
+		pageSize = 10
+	}
+
+	characterList, count, err := h.service.GetCharactersByMovieID(movieID, page, pageSize)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error getting characters", err)
+		return
+	}
+
+	respondWithSuccess(w, 200, "Success", count, characterList)
+}
+
+// getCommentHandler handles the request to get all comments for a movie
+// @Summary Get all comments for a movie
+// @Description Get all comments for a movie
+// @Tags Comments
+// @Accept json
+// @Param movie_id path int true "Movie ID"
+// @Param page query int false "Page number"
+// @Param pageSize query int false "Page size"
+// @Success 200 {object} model.GenericResponse{data=model.SignupResponse}
+// @Failure 400,502 {object} model.GenericResponse{error=model.ErrorResponse}
+// @Router /comments/{movie_id} [get]
+func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	movieID, err := strconv.Atoi(vars["movie"])
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid movie id", err)
+		return
+	}
+
+	//get page and page size from query params
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
+	if err != nil {
+		pageSize = 10
+	}
+
+	comments, count, err := h.service.GetComment(movieID, page, pageSize)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error getting comments", err)
+		return
+	}
+
+	respondWithSuccess(w, 200, "Success", count, comments)
+}
+
+// addCommentHandler handles the request to add a comment to a movie
+// @Summary Add a comment to a movie
+// @Description Add a comment to a movie
+// @Tags Movies
+// @Accept json
+// @Param movie_id path int true "Movie ID"
+// @Param comment body model.Comment true "Comment"
+// @Success 201 {object} model.GenericResponse{data=model.SignupResponse}
+// @Failure 400,502 {object} model.GenericResponse{error=model.ErrorResponse}
+// @Router /comments/{movie_id} [post]
+func (h handlers) addCommentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	movieID, err := strconv.Atoi(vars["movie"])
 	if err != nil {
@@ -40,52 +188,21 @@ func (h handlers) handleCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == "POST" {
-		var comment model.Comment
-		err := json.NewDecoder(r.Body).Decode(&comment)
-		if err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		comment.MovieID = movieID
-		comment.IPAddress = r.RemoteAddr
-		comment.CreatedAt = time.Now().UTC()
-
-		if err = h.service.SaveComment(movieID, comment); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusCreated)
-	} else if r.Method == "GET" {
-
-		comments, err := h.service.GetComment(movieID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		json.NewEncoder(w).Encode(comments)
-	} else {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-}
-
-func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	movieID, err := strconv.Atoi(vars["movie_id"])
-	if err != nil {
-		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
+	var comment model.Comment
+	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload", err)
 		return
 	}
 
-	characterList, err := h.service.GetCharactersByMovieID(movieID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	comment.SwapiMovieID = movieID
+	comment.IPv4Addr = r.RemoteAddr
+	comment.CreatedAt = time.Now().UTC()
+
+	if err = h.service.SaveComment(movieID, comment); err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error saving comment", err)
 		return
 	}
 
-	_ = json.NewEncoder(w).Encode(characterList)
+	respondWithSuccess(w, 201, "Comment added successfully", 0, nil)
+
 }

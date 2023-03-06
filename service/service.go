@@ -7,29 +7,31 @@ import (
 )
 
 type IServices interface {
-	GetMovies() ([]model.Movie, error)
+	GetMovies(page, pageSize int) ([]model.Movie, int64, error)
 	SaveComment(movieID int, comment model.Comment) error
-	GetComment(movieID int) ([]model.Comment, error)
-	GetCharactersByMovieID(movieID int) ([]model.Character, error)
+	GetComment(movieID int, page, pageSize int) ([]model.Comment, int64, error)
+	GetCharactersByMovieID(movieID int, page, pageSize int) ([]model.Character, int64, error)
 }
 
 type service struct {
 	cache             ports.ICache
 	commentRepository ports.ICommentRepository
+	swapiClient       ports.ISwapi
 }
 
-func NewServices(cache ports.ICache, commentRepository ports.ICommentRepository) service {
+func NewServices(cache ports.ICache, commentRepository ports.ICommentRepository, swapiClient ports.ISwapi) service {
 	return service{
 		cache:             cache,
 		commentRepository: commentRepository,
+		swapiClient:       swapiClient,
 	}
 }
 
-func (h service) GetMovies() ([]model.Movie, error) {
+func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 
-	movies, err := h.cache.GetMovies()
+	movies, _, err := s.cache.GetMovies(page, pageSize)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	sort.Slice(movies, func(i, j int) bool {
@@ -39,29 +41,29 @@ func (h service) GetMovies() ([]model.Movie, error) {
 	var movieList []model.Movie
 	for _, movie := range movies {
 
-		comments, err := h.commentRepository.GetCommentsByMovieID(movie.ID, 1, 1)
+		_, count, err := s.commentRepository.GetCommentsByMovieID(movie.ID, 1, 1)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		movieList = append(movieList, model.Movie{
 			Title:        movie.Title,
 			OpeningCrawl: movie.OpeningCrawl,
-			CommentCount: len(comments),
+			CommentCount: count,
 		})
 	}
 
-	return movieList, nil
+	return movieList, 0, nil
 }
 
-func (h service) SaveComment(movieID int, comment model.Comment) error {
-	return h.commentRepository.AddComment(comment)
+func (s service) SaveComment(movieID int, comment model.Comment) error {
+	return s.commentRepository.AddComment(comment)
 }
 
-func (h service) GetComment(movieID int) ([]model.Comment, error) {
-	return h.commentRepository.GetCommentsByMovieID(movieID, 1, 1)
+func (s service) GetComment(movieID int, page, pageSize int) ([]model.Comment, int64, error) {
+	return s.commentRepository.GetCommentsByMovieID(movieID, page, pageSize)
 }
 
-func (h service) GetCharactersByMovieID(movieID int) ([]model.Character, error) {
-	return h.cache.GetCharactersByMovieID(movieID)
+func (s service) GetCharactersByMovieID(movieID int, page, pageSize int) ([]model.Character, int64, error) {
+	return s.cache.GetCharactersByMovieID(movieID, page, pageSize)
 }

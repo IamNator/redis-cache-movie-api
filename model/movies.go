@@ -17,5 +17,5 @@ type (
 type Movie struct {
 	Title        string `json:"title"`
 	OpeningCrawl string `json:"opening_crawl"`
-	CommentCount int    `json:"comment_count"`
+	CommentCount int64  `json:"comment_count"`
 }

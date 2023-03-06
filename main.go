@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/iamnator/movie-api/service"
+	"github.com/iamnator/movie-api/thirdparty/swapi"
 	"log"
 
 	"github.com/gorilla/mux"
@@ -13,6 +14,18 @@ import (
 	"github.com/iamnator/movie-api/handler/http"
 )
 
+// @title Busha Movie API documentation
+// @version 1.0.0
+// @description This documents all rest endpoints exposed by this application.
+
+// @contact.name Busha Support
+// @contact.email natorverinumbe@gmail.com
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8500
+// @BasePath /api
 func main() {
 
 	if er := env.Init(); er != nil {
@@ -21,23 +34,26 @@ func main() {
 
 	r := mux.NewRouter()
 
-	//redisClient := redis.NewClient(&redis.Options{
-	//	Addr: env.Get().REDIS_URL,
-	//})
-	//
-	//db, err := sql.Open("postgres", env.Get().POSTGRES_URL)
-	//if err != nil {
-	//	panic(err)
-	//}
+	redisCache, err := cache.NewRedisCache("redis://busha_redis:6380")
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Connected to redis")
 
-	//gorm.Op
+	commentRepo, err := repository.NewPgxCommentRepository(env.Get().POSTGRES_URL)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Connected to postgres")
 
-	redisCache := cache.RedisCache{}
-	commentRepo := repository.PgxCommentRepoImpl{}
+	swapiClient, err := swapi.NewSwapi()
+	if err != nil {
+		panic(err)
+	}
 
-	srv := service.NewServices(redisCache, commentRepo)
+	srv := service.NewServices(redisCache, commentRepo, swapiClient)
 
 	log.Println("Starting server on port ", env.Get().PORT)
 
-	log.Fatal(http.Run(r, srv))
+	log.Fatal(http.Run(env.Get().PORT, r, srv))
 }

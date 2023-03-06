@@ -10,22 +10,26 @@ services:
     environment:
       PORT: "9500"
       POSTGRES_URL: "postgres://postgres:password@busha_db:5432/busha"
-      REDIS_URL: "redis://busha_redis:6380"
+      REDIS_URL: redis://busha_redis:6380
     container_name: api
     ports:
       - 9500:9500
     volumes:
         - .:/app
     depends_on:
-      - redis
+      - busha_redis
       - db
+    networks:
+      - default
 
-  redis:
+  busha_redis:
     image: redis:5-alpine
     container_name: busha_redis
     ports:
       - 6380:6379
     restart: always
+    networks:
+      - default
 
   db:
     image: postgres:13-alpine
@@ -39,16 +43,8 @@ services:
     volumes:
       - ./database/pgdata:/var/lib/postgresql/data
     restart: always
+    networks:
+      - default
 
-#  migrate:
-#    image: migrate/migrate
-#    environment:
-#      POSTGRES_USER: "postgres"
-#      POSTGRES_PASSWORD: "password"
-#      POSTGRES_DB: "busha"
-#      POSTGRES_HOST: "busha_db"
-#    depends_on:
-#      - db
-#    volumes:
-#      - './database:/database'
-#    command: [ "-path", "./database/migrations", "-database",  "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}?sslmode=disable", "up" ]
+networks:
+  default:
