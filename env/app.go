@@ -21,14 +21,13 @@ var (
 func Init() error {
 	sO.Do(func() {
 		defaultEnv.PORT = os.Getenv("PORT")
-		defaultEnv.REDIS_URL = os.Getenv("REDIS_URL")
-		defaultEnv.POSTGRES_URL = os.Getenv("POSTGRES_URL")
+		defaultEnv.REDIS_URL = os.Getenv("REDISCLOUD_URL")
+		defaultEnv.POSTGRES_URL = os.Getenv("DATABASE_URL")
 	})
 
 	return nil
 }
 
 func Get() appEnv {
-
 	return defaultEnv
 }

@@ -2,9 +2,9 @@ module github.com/iamnator/movie-api
 
 go 1.19
 
+// +heroku goVersion go1.19
 require (
 	github.com/go-openapi/runtime v0.25.0
-	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
