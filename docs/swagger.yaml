@@ -54,9 +54,12 @@ definitions:
     properties:
       comment_count:
         type: integer
-      opening_crawl:
+      id:
+        example: 1
+        type: integer
+      name:
         type: string
-      title:
+      opening_crawl:
         type: string
     type: object
 host: localhost:8500

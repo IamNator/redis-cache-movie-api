@@ -8,7 +8,7 @@ const docTemplate = `{
     "swagger": "2.0",
     "info": {
         "description": "{{escape .Description}}",
-        "title": "{{.Name}}",
+        "title": "{{.Title}}",
         "contact": {
             "name": "Busha Support",
             "email": "natorverinumbe@gmail.com"
@@ -458,10 +458,14 @@ const docTemplate = `{
                 "comment_count": {
                     "type": "integer"
                 },
-                "opening_crawl": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
                     "type": "string"
                 },
-                "title": {
+                "opening_crawl": {
                     "type": "string"
                 }
             }

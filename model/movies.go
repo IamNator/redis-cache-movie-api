@@ -15,7 +15,7 @@ type (
 )
 
 type Movie struct {
-	SwapiMovieID int    `json:"id"`
+	SwapiMovieID int    `json:"id" example:"1" swaggertype:"integer"`
 	Name         string `json:"name"`
 	OpeningCrawl string `json:"opening_crawl"`
 	CommentCount int64  `json:"comment_count"`

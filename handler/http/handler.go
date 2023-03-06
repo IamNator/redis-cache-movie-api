@@ -26,10 +26,24 @@ func Run(port string, r *mux.Router, srv service.IServices) error {
 
 	handler := NewHandlers(srv)
 
+	// programmatically set swagger info
+	//docs.SwaggerInfo.Title = "Busha Movie API"
+	//docs.SwaggerInfo.Description = "This is a sample server for a movie API."
+	//docs.SwaggerInfo.Version = "1.0"
+	//docs.SwaggerInfo.Host = "busha-movie-api-v1.herokuapp.com"
+	//docs.SwaggerInfo.BasePath = "/"
+	//docs.SwaggerInfo.Schemes = []string{"http", "https"}
+
 	// documentation for developers
-	opts := middleware.SwaggerUIOpts{SpecURL: "/swagger.yaml"}
+	opts := middleware.SwaggerUIOpts{SpecURL: "./docs/swagger.json"}
 	sh := middleware.SwaggerUI(opts, nil)
 	r.Handle("/docs", sh)
+
+	r.PathPrefix("/docs/").Handler(http.StripPrefix("/docs/", http.FileServer(http.Dir("docs"))))
+
+	r.Path("/swagger.yaml").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "docs/swagger.yaml")
+	})
 
 	r.HandleFunc("/movies", handler.getMoviesHandler).Methods(http.MethodGet)
 	r.HandleFunc("/characters/{movie_id}", handler.getMovieCharacterHandler).Methods(http.MethodGet)

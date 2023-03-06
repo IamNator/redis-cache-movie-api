@@ -452,10 +452,14 @@
                 "comment_count": {
                     "type": "integer"
                 },
-                "opening_crawl": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
                     "type": "string"
                 },
-                "title": {
+                "opening_crawl": {
                     "type": "string"
                 }
             }
