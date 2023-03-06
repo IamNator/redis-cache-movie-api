@@ -37,5 +37,7 @@ func main() {
 
 	srv := service.NewServices(redisCache, commentRepo)
 
+	log.Println("Starting server on port ", env.Get().PORT)
+
 	log.Fatal(http.Run(r, srv))
 }
