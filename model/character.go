@@ -1,6 +1,15 @@
 package model
 
 type (
+	GetCharactersByMovieIDArgs struct {
+		MovieID   int
+		Page      int
+		PageSize  int
+		SortKey   string //name, gender or height
+		SortOrder string //asc or desc
+		Gender    string //  'female', 'male' or 'n/a' -> default
+	}
+
 	Character struct {
 		ID       int    `json:"character_id"` //from swapi
 		MovieID  int    `json:"movie_id"`     //from swapi

@@ -14,7 +14,7 @@ type IServices interface {
 	GetMovies(page, pageSize int) ([]model.Movie, int64, error)
 	SaveComment(movieID int, comment model.Comment) error
 	GetComment(movieID int, page, pageSize int) ([]model.Comment, int64, error)
-	GetCharactersByMovieID(movieID int, page, pageSize int) ([]model.Character, int64, error)
+	GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) ([]model.Character, int64, error)
 }
 
 type service struct {
@@ -47,7 +47,7 @@ func NewServices(cache ports.ICache, commentRepository ports.ICommentRepository,
 
 func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 
-	movies, _, err := s.cache.GetMovies(page, pageSize)
+	movies, count, err := s.cache.GetMovies(page, pageSize)
 	if err != nil {
 		log.Debug().Err(err).Msg("error getting movies from cache")
 		return nil, 0, errors.New("error getting movies from cache")
@@ -60,7 +60,7 @@ func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 	var movieList []model.Movie
 	for _, movie := range movies {
 
-		count, err := s.commentRepository.GetCommentCountByMovieID(movie.ID)
+		commentCount, err := s.commentRepository.GetCommentCountByMovieID(movie.ID)
 		if err != nil {
 			log.Error().Err(err).Msg("error getting comment count")
 			return nil, 0, errors.New("error getting comment count")
@@ -70,11 +70,28 @@ func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 			SwapiMovieID: movie.ID,
 			Name:         movie.Name,
 			OpeningCrawl: movie.OpeningCrawl,
-			CommentCount: count,
+			CommentCount: commentCount,
 		})
 	}
 
-	return movieList, 0, nil
+	return movieList, count, nil
+}
+
+func (s service) GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) ([]model.Character, int64, error) {
+	//check if movie exists
+	movie, err := s.cache.GetMovieByID(arg.MovieID)
+	if err != nil {
+		log.Debug().Err(err).Msg("movie not found")
+		return nil, 0, errors.New("movie not found")
+	}
+
+	characters, count, err := s.cache.GetCharactersByMovieID(movie.ID, arg.Page, arg.PageSize)
+	if err != nil {
+		log.Error().Err(err).Msg("error getting characters")
+		return nil, 0, errors.New("error getting characters")
+	}
+
+	return characters, count, nil
 }
 
 func (s service) SaveComment(movieID int, comment model.Comment) error {
@@ -118,21 +135,4 @@ func (s service) GetComment(movieID int, page, pageSize int) ([]model.Comment, i
 	}
 
 	return comments, count, nil
-}
-
-func (s service) GetCharactersByMovieID(movieID int, page, pageSize int) ([]model.Character, int64, error) {
-	//check if movie exists
-	movie, err := s.cache.GetMovieByID(movieID)
-	if err != nil {
-		log.Debug().Err(err).Msg("movie not found")
-		return nil, 0, errors.New("movie not found")
-	}
-
-	characters, count, err := s.cache.GetCharactersByMovieID(movie.ID, page, pageSize)
-	if err != nil {
-		log.Error().Err(err).Msg("error getting characters")
-		return nil, 0, errors.New("error getting characters")
-	}
-
-	return characters, count, nil
 }

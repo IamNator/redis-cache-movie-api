@@ -126,7 +126,20 @@ func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Reques
 		pageSize = 10
 	}
 
-	characterList, count, err := h.service.GetCharactersByMovieID(movieID, page, pageSize)
+	sortKey := r.URL.Query().Get("sortKey")
+	sortOrder := r.URL.Query().Get("sortOrder")
+	gender := r.URL.Query().Get("gender")
+
+	var arg = model.GetCharactersByMovieIDArgs{
+		MovieID:   movieID,
+		Page:      page,
+		PageSize:  pageSize,
+		SortKey:   sortKey,
+		SortOrder: sortOrder,
+		Gender:    gender,
+	}
+
+	characterList, count, err := h.service.GetCharactersByMovieID(arg)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error getting characters", err)
 		return

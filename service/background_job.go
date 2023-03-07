@@ -3,11 +3,17 @@ package service
 import (
 	"errors"
 	"fmt"
-	
+	"strconv"
+
 	"github.com/rs/zerolog/log"
 
 	"github.com/iamnator/movie-api/model"
 )
+
+func (s service) backGroundJOB() error {
+	//get all movies and characters
+	return s.updateMovies()
+}
 
 func getFilmIDFromURL(url string) (int, error) {
 	var id int
@@ -16,11 +22,13 @@ func getFilmIDFromURL(url string) (int, error) {
 	}
 	return id, nil
 }
-func (s service) backGroundJOB() error {
 
-	//get all movies
-	go s.updateMovies()
-	return nil
+func getCharacterIDFromURL(url string) (int, error) {
+	var id int
+	if _, er := fmt.Sscanf(url, "https://swapi.dev/api/people/%d/", &id); er != nil {
+		return 0, errors.New("error getting id from url")
+	}
+	return id, nil
 }
 
 func (s service) updateMovies() error {
@@ -34,6 +42,7 @@ func (s service) updateMovies() error {
 	var filmID int
 
 	characterIDChan := make(chan int, 5)
+	defer close(characterIDChan)
 
 	go s.updateCharacters(characterIDChan)
 
@@ -74,14 +83,6 @@ func (s service) updateMovies() error {
 	return err
 }
 
-func getCharacterIDFromURL(url string) (int, error) {
-	var id int
-	if _, er := fmt.Sscanf(url, "https://swapi.dev/api/people/%d/", &id); er != nil {
-		return 0, errors.New("error getting id from url")
-	}
-	return id, nil
-}
-
 func (s service) updateCharacters(chn chan int) {
 
 	for characterID := range chn {
@@ -91,10 +92,18 @@ func (s service) updateCharacters(chn chan int) {
 			continue
 		}
 		var characterList []model.Character
+		var heightCm int
 
 		for _, character := range characters {
+
+			if h, er := strconv.Atoi(character.Height); er == nil {
+				heightCm = h
+			}
+
 			characterList = append(characterList, model.Character{
-				Name: character.Name,
+				Name:     character.Name,
+				Gender:   character.Gender,
+				HeightCm: heightCm,
 			})
 		}
 
