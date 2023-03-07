@@ -67,6 +67,7 @@ func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64
 }
 
 // getMoviesHandler handles the request to get all movies
+//
 //	@Summary		Get all movies
 //	@Description	Get all movies
 //	@Tags			Movies
@@ -98,12 +99,16 @@ func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // getMovieCharacterHandler handles the request to get all characters in a movie
+//
 //	@Summary		Get all characters in a movie
 //	@Description	Get all characters in a movie
 //	@Tags			Characters
-//	@Param			movie_id	path		int	true	"Movie ID"
-//	@Param			page		query		int	false	"Page number"
-//	@Param			pageSize	query		int	false	"Page size"
+//	@Param			movie_id	path		int		true	"Movie ID"
+//	@Param			page		query		int		false	"Page number"
+//	@Param			pageSize	query		int		false	"Page size"
+//	@Param			sortKey		query		string	false	"Sort key (name | gender | height)"
+//	@Param			sortOrder	query		string	false	"Sort order (asc | desc)"
+//	@Param			gender		query		string	false	" ' Gender (female' | 'male')"
 //	@Success		200			{object}	model.GenericResponse{data=[]model.Character}
 //	@Failure		400,502		{object}	model.GenericResponse{error=string}
 //	@Router			/characters/{movie_id} [get]
@@ -149,6 +154,7 @@ func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Reques
 }
 
 // getCommentHandler handles the request to get all comments for a movie
+//
 //	@Summary		Get all comments for a movie
 //	@Description	Get all comments for a movie
 //	@Tags			Comments
@@ -187,6 +193,7 @@ func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // addCommentHandler handles the request to add a comment to a movie
+//
 //	@Summary		Add a comment to a movie
 //	@Description	Add a comment to a movie
 //	@Tags			Comments

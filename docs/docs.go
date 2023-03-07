@@ -48,6 +48,24 @@ const docTemplate = `{
                         "description": "Page size",
                         "name": "pageSize",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort key (name | gender | height)",
+                        "name": "sortKey",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order (asc | desc)",
+                        "name": "sortOrder",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": " ' Gender (female' | 'male')",
+                        "name": "gender",
+                        "in": "query"
                     }
                 ],
                 "responses": {

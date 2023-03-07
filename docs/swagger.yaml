@@ -89,6 +89,18 @@ paths:
         in: query
         name: pageSize
         type: integer
+      - description: Sort key (name | gender | height)
+        in: query
+        name: sortKey
+        type: string
+      - description: Sort order (asc | desc)
+        in: query
+        name: sortOrder
+        type: string
+      - description: ' '' Gender (female'' | ''male'')'
+        in: query
+        name: gender
+        type: string
       responses:
         "200":
           description: OK
