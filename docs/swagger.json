@@ -14,6 +14,7 @@
         "version": "1.0.0"
     },
     "host": "localhost:9500",
+    "basePath": "/",
     "paths": {
         "/characters/{movie_id}": {
             "get": {
@@ -73,10 +74,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.Character"
-                                            }
+                                            "$ref": "#/definitions/model.CharacterList"
                                         }
                                     }
                                 }
@@ -327,6 +325,12 @@
                                 {
                                     "type": "object",
                                     "properties": {
+                                        " count": {
+                                            "type": "integer"
+                                        },
+                                        " message": {
+                                            "type": "string"
+                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
@@ -348,6 +352,9 @@
                                 {
                                     "type": "object",
                                     "properties": {
+                                        " message": {
+                                            "type": "string"
+                                        },
                                         "error": {
                                             "type": "string"
                                         }
@@ -366,6 +373,9 @@
                                 {
                                     "type": "object",
                                     "properties": {
+                                        " message": {
+                                            "type": "string"
+                                        },
                                         "error": {
                                             "type": "string"
                                         }
@@ -379,22 +389,43 @@
         }
     },
     "definitions": {
-        "model.Character": {
+        "model.CharacterList": {
             "type": "object",
             "properties": {
-                "character_id": {
-                    "description": "from swapi",
+                "characters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CharacterList_Character"
+                    }
+                },
+                "total_cm": {
                     "type": "integer"
                 },
+                "total_count": {
+                    "type": "integer"
+                },
+                "total_ft": {
+                    "type": "string"
+                },
+                "total_in": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.CharacterList_Character": {
+            "type": "object",
+            "properties": {
                 "gender": {
                     "type": "string"
                 },
                 "height_cm": {
                     "type": "integer"
                 },
-                "movie_id": {
-                    "description": "from swapi",
-                    "type": "integer"
+                "height_ft": {
+                    "type": "string"
+                },
+                "height_in": {
+                    "type": "number"
                 },
                 "name": {
                     "type": "string"

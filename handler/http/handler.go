@@ -86,8 +86,8 @@ func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64
 //	@Tags			Movies
 //	@Param			page		query		int	false	"Page number"
 //	@Param			pageSize	query		int	false	"Page size"
-//	@Success		200			{object}	model.GenericResponse{data=[]model.Movie, count="10", message="Success"}
-//	@Failure		400,502		{object}	model.GenericResponse{error=string, message="Error getting movies"}
+//	@Success		200			{object}	model.GenericResponse{data=[]model.Movie, count=int64, message=string}
+//	@Failure		400,502		{object}	model.GenericResponse{error=string, message=string}
 //	@Router			/movies [get]
 func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -122,7 +122,7 @@ func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 //	@Param			sortKey		query		string	false	"Sort key (name | gender | height)"
 //	@Param			sortOrder	query		string	false	"Sort order (asc | desc)"
 //	@Param			gender		query		string	false	" ' Gender (female' | 'male')"
-//	@Success		200			{object}	model.GenericResponse{data=[]model.Character}
+//	@Success		200			{object}	model.GenericResponse{data=model.CharacterList}
 //	@Failure		400,502		{object}	model.GenericResponse{error=string}
 //	@Router			/characters/{movie_id} [get]
 func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Request) {

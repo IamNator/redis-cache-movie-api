@@ -1,16 +1,30 @@
+basePath: /
 definitions:
-  model.Character:
+  model.CharacterList:
     properties:
-      character_id:
-        description: from swapi
+      characters:
+        items:
+          $ref: '#/definitions/model.CharacterList_Character'
+        type: array
+      total_cm:
         type: integer
+      total_count:
+        type: integer
+      total_ft:
+        type: string
+      total_in:
+        type: number
+    type: object
+  model.CharacterList_Character:
+    properties:
       gender:
         type: string
       height_cm:
         type: integer
-      movie_id:
-        description: from swapi
-        type: integer
+      height_ft:
+        type: string
+      height_in:
+        type: number
       name:
         type: string
     type: object
@@ -110,9 +124,7 @@ paths:
             - $ref: '#/definitions/model.GenericResponse'
             - properties:
                 data:
-                  items:
-                    $ref: '#/definitions/model.Character'
-                  type: array
+                  $ref: '#/definitions/model.CharacterList'
               type: object
         "400":
           description: Bad Request
@@ -251,6 +263,10 @@ paths:
             allOf:
             - $ref: '#/definitions/model.GenericResponse'
             - properties:
+                ' count':
+                  type: integer
+                ' message':
+                  type: string
                 data:
                   items:
                     $ref: '#/definitions/model.Movie'
@@ -262,6 +278,8 @@ paths:
             allOf:
             - $ref: '#/definitions/model.GenericResponse'
             - properties:
+                ' message':
+                  type: string
                 error:
                   type: string
               type: object
@@ -271,6 +289,8 @@ paths:
             allOf:
             - $ref: '#/definitions/model.GenericResponse'
             - properties:
+                ' message':
+                  type: string
                 error:
                   type: string
               type: object

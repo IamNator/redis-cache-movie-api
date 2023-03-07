@@ -80,10 +80,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.Character"
-                                            }
+                                            "$ref": "#/definitions/model.CharacterList"
                                         }
                                     }
                                 }
@@ -334,6 +331,12 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        " count": {
+                                            "type": "integer"
+                                        },
+                                        " message": {
+                                            "type": "string"
+                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
@@ -355,6 +358,9 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        " message": {
+                                            "type": "string"
+                                        },
                                         "error": {
                                             "type": "string"
                                         }
@@ -373,6 +379,9 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        " message": {
+                                            "type": "string"
+                                        },
                                         "error": {
                                             "type": "string"
                                         }
@@ -386,22 +395,43 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "model.Character": {
+        "model.CharacterList": {
             "type": "object",
             "properties": {
-                "character_id": {
-                    "description": "from swapi",
+                "characters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CharacterList_Character"
+                    }
+                },
+                "total_cm": {
                     "type": "integer"
                 },
+                "total_count": {
+                    "type": "integer"
+                },
+                "total_ft": {
+                    "type": "string"
+                },
+                "total_in": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.CharacterList_Character": {
+            "type": "object",
+            "properties": {
                 "gender": {
                     "type": "string"
                 },
                 "height_cm": {
                     "type": "integer"
                 },
-                "movie_id": {
-                    "description": "from swapi",
-                    "type": "integer"
+                "height_ft": {
+                    "type": "string"
+                },
+                "height_in": {
+                    "type": "number"
                 },
                 "name": {
                     "type": "string"
@@ -482,7 +512,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0.0",
 	Host:             "localhost:9500",
-	BasePath:         "",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Busha Movie API documentation",
 	Description:      "This documents all rest endpoints exposed by this application.",

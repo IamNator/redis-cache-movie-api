@@ -14,7 +14,7 @@ type IServices interface {
 	GetMovies(page, pageSize int) ([]model.Movie, int64, error)
 	SaveComment(movieID int, comment model.Comment) error
 	GetComment(movieID int, page, pageSize int) ([]model.Comment, int64, error)
-	GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) ([]model.Character, int64, error)
+	GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) (*model.CharacterList, int64, error)
 }
 
 type service struct {
@@ -90,7 +90,7 @@ func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 	return movieList, count, nil
 }
 
-func (s service) GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) ([]model.Character, int64, error) {
+func (s service) GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) (*model.CharacterList, int64, error) {
 	//check if movie exists
 	movie, err := s.cache.GetMovieByID(arg.MovieID)
 	if err != nil {
@@ -104,7 +104,26 @@ func (s service) GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) ([
 		return nil, 0, errors.New("error getting characters")
 	}
 
-	return characters, count, nil
+	var characterList model.CharacterList
+	var inches float64
+	var feets string
+	for _, character := range characters {
+		feets, inches = model.FeetsInches(character.HeightCm)
+		characterList.Characters = append(characterList.Characters, model.CharacterList_Character{
+			Name:     character.Name,
+			Gender:   character.Gender,
+			HeightCm: character.HeightCm,
+			HeightFt: feets,
+			HeightIn: inches,
+		})
+
+		characterList.TotalCm += character.HeightCm
+	}
+
+	characterList.TotalFt, characterList.TotalIn = model.FeetsInches(characterList.TotalCm)
+	characterList.TotalCount = int(count)
+
+	return &characterList, count, nil
 }
 
 func (s service) SaveComment(movieID int, comment model.Comment) error {

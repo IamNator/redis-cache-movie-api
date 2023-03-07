@@ -28,8 +28,8 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host	localhost:9500
-// @BasePath	/
+//	@host		localhost:9500
+//	@BasePath	/
 func main() {
 
 	if er := env.Init(); er != nil {
