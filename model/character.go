@@ -1,5 +1,7 @@
 package model
 
+import "fmt"
+
 type (
 	GetCharactersByMovieIDArgs struct {
 		MovieID   int
@@ -35,10 +37,22 @@ type (
 	}
 )
 
-func (c Character) FeetsInches() (feats string, inches float64) {
+func (c Character) FeetsInches() (feets string, inches float64) {
 	return FeetsInches(c.HeightCm)
 }
 
-func FeetsInches(heightCm int) (feats string, inches float64) {
-	return "", 0
+func FeetsInches(heightCm int) (feets string, inches float64) {
+
+	// 1 inch = 2.54 cm
+	// 1 feet = 12 inches
+
+	if heightCm == 0 {
+		return "0", 0
+	}
+
+	inches = float64(heightCm) / 2.54
+	feets = fmt.Sprintf("%d", int(inches/12))
+	inches = inches - (float64(int(inches/12)) * 12)
+
+	return feets, inches
 }
