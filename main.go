@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/iamnator/movie-api/docs"
 	"github.com/iamnator/movie-api/service"
 	"github.com/iamnator/movie-api/thirdparty/swapi"
 	"log"
@@ -18,19 +19,29 @@ import (
 // @version 1.0.0
 // @description This documents all rest endpoints exposed by this application.
 
-// @contact.name Busha Support
+// @contact.name Nator Verinumbe
 // @contact.email natorverinumbe@gmail.com
 
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host localhost:8500
-// @BasePath /api
 func main() {
 
 	if er := env.Init(); er != nil {
 		panic(er)
 	}
+
+	//programmatically set swagger info
+	docs.SwaggerInfo.Title = "Busha Movie API"
+	docs.SwaggerInfo.Description = "This is a sample server for a movie API."
+	docs.SwaggerInfo.Version = "1.0"
+
+	if env.Get().HOST_MACHINE != "" {
+		docs.SwaggerInfo.Host = env.Get().HOST_MACHINE
+	}
+
+	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	r := mux.NewRouter()
 

@@ -13,7 +13,6 @@
         },
         "version": "1.0.0"
     },
-    "host": "localhost:8500",
     "basePath": "/api",
     "paths": {
         "/characters/{movie_id}": {
