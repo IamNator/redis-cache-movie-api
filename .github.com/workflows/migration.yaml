@@ -1,0 +1,27 @@
+name: Apply Database Migrations
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.17'
+
+      - name: Install go migrate
+        run: go get -v -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate
+
+      - name: Apply Migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: migrate -path=./database/migrations -database=$DATABASE_URL up
