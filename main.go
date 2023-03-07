@@ -15,15 +15,15 @@ import (
 	"github.com/iamnator/movie-api/handler/http"
 )
 
-// @title Busha Movie API documentation
-// @version 1.0.0
-// @description This documents all rest endpoints exposed by this application.
+//	@title			Busha Movie API documentation
+//	@version		1.0.0
+//	@description	This documents all rest endpoints exposed by this application.
 
-// @contact.name Nator Verinumbe
-// @contact.email natorverinumbe@gmail.com
+//	@contact.name	Nator Verinumbe
+//	@contact.email	natorverinumbe@gmail.com
 
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
 func main() {
 

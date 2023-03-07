@@ -8,9 +8,9 @@ const docTemplate = `{
     "swagger": "2.0",
     "info": {
         "description": "{{escape .Description}}",
-        "title": "{{.Name}}",
+        "title": "{{.Title}}",
         "contact": {
-            "name": "Busha Support",
+            "name": "Nator Verinumbe",
             "email": "natorverinumbe@gmail.com"
         },
         "license": {
@@ -371,10 +371,18 @@ const docTemplate = `{
         "model.Character": {
             "type": "object",
             "properties": {
+                "character_id": {
+                    "description": "from swapi",
+                    "type": "integer"
+                },
                 "gender": {
                     "type": "string"
                 },
                 "height_cm": {
+                    "type": "integer"
+                },
+                "movie_id": {
+                    "description": "from swapi",
                     "type": "integer"
                 },
                 "name": {
@@ -456,7 +464,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0.0",
 	Host:             "",
-	BasePath:         "/api",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Busha Movie API documentation",
 	Description:      "This documents all rest endpoints exposed by this application.",

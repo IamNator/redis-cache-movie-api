@@ -1,2 +1,2 @@
 # generate swagger docs
-swag init --parseDependency --parseInternal -q
+swag fmt && swag init --parseDependency --parseInternal -q

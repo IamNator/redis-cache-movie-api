@@ -67,14 +67,14 @@ func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64
 }
 
 // getMoviesHandler handles the request to get all movies
-// @Summary Get all movies
-// @Description Get all movies
-// @Tags Movies
-// @Param page query int false "Page number"
-// @Param pageSize query int false "Page size"
-// @Success 200 {object} model.GenericResponse{data=[]model.Movie}
-// @Failure 400,502 {object} model.GenericResponse{error=string}
-// @Router /movies [get]
+//	@Summary		Get all movies
+//	@Description	Get all movies
+//	@Tags			Movies
+//	@Param			page		query		int	false	"Page number"
+//	@Param			pageSize	query		int	false	"Page size"
+//	@Success		200			{object}	model.GenericResponse{data=[]model.Movie}
+//	@Failure		400,502		{object}	model.GenericResponse{error=string}
+//	@Router			/movies [get]
 func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	//get page and page size from query params
@@ -98,15 +98,15 @@ func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // getMovieCharacterHandler handles the request to get all characters in a movie
-// @Summary Get all characters in a movie
-// @Description Get all characters in a movie
-// @Tags Characters
-// @Param movie_id path int true "Movie ID"
-// @Param page query int false "Page number"
-// @Param pageSize query int false "Page size"
-// @Success 200 {object} model.GenericResponse{data=[]model.Character}
-// @Failure 400,502 {object} model.GenericResponse{error=string}
-// @Router /characters/{movie_id} [get]
+//	@Summary		Get all characters in a movie
+//	@Description	Get all characters in a movie
+//	@Tags			Characters
+//	@Param			movie_id	path		int	true	"Movie ID"
+//	@Param			page		query		int	false	"Page number"
+//	@Param			pageSize	query		int	false	"Page size"
+//	@Success		200			{object}	model.GenericResponse{data=[]model.Character}
+//	@Failure		400,502		{object}	model.GenericResponse{error=string}
+//	@Router			/characters/{movie_id} [get]
 func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	movieID, err := strconv.Atoi(vars["movie_id"])
@@ -149,15 +149,15 @@ func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Reques
 }
 
 // getCommentHandler handles the request to get all comments for a movie
-// @Summary Get all comments for a movie
-// @Description Get all comments for a movie
-// @Tags Comments
-// @Param movie_id path int true "Movie ID"
-// @Param page query int false "Page number"
-// @Param pageSize query int false "Page size"
-// @Success 200 {object} model.GenericResponse{data=[]model.Comment}
-// @Failure 400,502 {object} model.GenericResponse{error=string}
-// @Router /comments/{movie_id} [get]
+//	@Summary		Get all comments for a movie
+//	@Description	Get all comments for a movie
+//	@Tags			Comments
+//	@Param			movie_id	path		int	true	"Movie ID"
+//	@Param			page		query		int	false	"Page number"
+//	@Param			pageSize	query		int	false	"Page size"
+//	@Success		200			{object}	model.GenericResponse{data=[]model.Comment}
+//	@Failure		400,502		{object}	model.GenericResponse{error=string}
+//	@Router			/comments/{movie_id} [get]
 func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	movieID, err := strconv.Atoi(vars["movie"])
@@ -187,15 +187,15 @@ func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // addCommentHandler handles the request to add a comment to a movie
-// @Summary Add a comment to a movie
-// @Description Add a comment to a movie
-// @Tags Comments
-// @Accept json
-// @Param movie_id path int true "Movie ID"
-// @Param comment body model.Comment true "Comment"
-// @Success 201 {object} model.GenericResponse{data=model.Comment}
-// @Failure 400,502 {object} model.GenericResponse{error=string}
-// @Router /comments/{movie_id} [post]
+//	@Summary		Add a comment to a movie
+//	@Description	Add a comment to a movie
+//	@Tags			Comments
+//	@Accept			json
+//	@Param			movie_id	path		int				true	"Movie ID"
+//	@Param			comment		body		model.Comment	true	"Comment"
+//	@Success		201			{object}	model.GenericResponse{data=model.Comment}
+//	@Failure		400,502		{object}	model.GenericResponse{error=string}
+//	@Router			/comments/{movie_id} [post]
 func (h handlers) addCommentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	movieID, err := strconv.Atoi(vars["movie"])

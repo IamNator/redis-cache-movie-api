@@ -1,10 +1,15 @@
-basePath: /api
 definitions:
   model.Character:
     properties:
+      character_id:
+        description: from swapi
+        type: integer
       gender:
         type: string
       height_cm:
+        type: integer
+      movie_id:
+        description: from swapi
         type: integer
       name:
         type: string
@@ -59,7 +64,7 @@ definitions:
 info:
   contact:
     email: natorverinumbe@gmail.com
-    name: Busha Support
+    name: Nator Verinumbe
   description: This documents all rest endpoints exposed by this application.
   license:
     name: Apache 2.0

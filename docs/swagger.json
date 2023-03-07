@@ -4,7 +4,7 @@
         "description": "This documents all rest endpoints exposed by this application.",
         "title": "Busha Movie API documentation",
         "contact": {
-            "name": "Busha Support",
+            "name": "Nator Verinumbe",
             "email": "natorverinumbe@gmail.com"
         },
         "license": {
@@ -13,7 +13,6 @@
         },
         "version": "1.0.0"
     },
-    "basePath": "/api",
     "paths": {
         "/characters/{movie_id}": {
             "get": {
@@ -364,10 +363,18 @@
         "model.Character": {
             "type": "object",
             "properties": {
+                "character_id": {
+                    "description": "from swapi",
+                    "type": "integer"
+                },
                 "gender": {
                     "type": "string"
                 },
                 "height_cm": {
+                    "type": "integer"
+                },
+                "movie_id": {
+                    "description": "from swapi",
                     "type": "integer"
                 },
                 "name": {
