@@ -207,7 +207,7 @@ func (h handlers) addCommentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	movieID, err := strconv.Atoi(vars["movie"])
 	if err != nil {
-		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
+		respondWithError(w, http.StatusBadRequest, "Invalid movie id", err)
 		return
 	}
 
