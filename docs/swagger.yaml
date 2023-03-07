@@ -1,13 +1,5 @@
 basePath: /api
 definitions:
-  gorm.DeletedAt:
-    properties:
-      time:
-        type: string
-      valid:
-        description: Valid is true if Time is not NULL
-        type: boolean
-    type: object
   model.Character:
     properties:
       gender:
@@ -19,19 +11,17 @@ definitions:
     type: object
   model.Comment:
     properties:
-      createdAt:
+      created_at:
         type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
       id:
         type: string
-      ipv4Addr:
+      ipv4_addr:
         type: string
       message:
         type: string
-      swapiMovieID:
+      swapi_movie_id:
         type: integer
-      updatedAt:
+      updated_at:
         type: string
     type: object
   model.GenericResponse:
@@ -53,13 +43,17 @@ definitions:
   model.Movie:
     properties:
       comment_count:
+        example: 10
         type: integer
       id:
         example: 1
         type: integer
       name:
+        example: A New Hope
         type: string
       opening_crawl:
+        example: It is a period of civil war. Rebel spaceships, striking from a hidden
+          base, have won their first victory against the evil Galactic Empire.
         type: string
     type: object
 host: localhost:8500
@@ -76,8 +70,6 @@ info:
 paths:
   /characters/{movie_id}:
     get:
-      consumes:
-      - application/json
       description: Get all characters in a movie
       parameters:
       - description: Movie ID
@@ -125,11 +117,9 @@ paths:
               type: object
       summary: Get all characters in a movie
       tags:
-      - Movies
+      - Characters
   /comments/{movie_id}:
     get:
-      consumes:
-      - application/json
       description: Get all comments for a movie
       parameters:
       - description: Movie ID
@@ -224,11 +214,9 @@ paths:
               type: object
       summary: Add a comment to a movie
       tags:
-      - Movies
+      - Comments
   /movies:
     get:
-      consumes:
-      - application/json
       description: Get all movies
       parameters:
       - description: Page number

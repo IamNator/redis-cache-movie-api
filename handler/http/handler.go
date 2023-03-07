@@ -84,7 +84,6 @@ func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64
 // @Summary Get all movies
 // @Description Get all movies
 // @Tags Movies
-// @Accept json
 // @Param page query int false "Page number"
 // @Param pageSize query int false "Page size"
 // @Success 200 {object} model.GenericResponse{data=[]model.Movie}
@@ -115,8 +114,7 @@ func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 // getMovieCharacterHandler handles the request to get all characters in a movie
 // @Summary Get all characters in a movie
 // @Description Get all characters in a movie
-// @Tags Movies
-// @Accept json
+// @Tags Characters
 // @Param movie_id path int true "Movie ID"
 // @Param page query int false "Page number"
 // @Param pageSize query int false "Page size"
@@ -155,7 +153,6 @@ func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Reques
 // @Summary Get all comments for a movie
 // @Description Get all comments for a movie
 // @Tags Comments
-// @Accept json
 // @Param movie_id path int true "Movie ID"
 // @Param page query int false "Page number"
 // @Param pageSize query int false "Page size"
@@ -193,7 +190,7 @@ func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
 // addCommentHandler handles the request to add a comment to a movie
 // @Summary Add a comment to a movie
 // @Description Add a comment to a movie
-// @Tags Movies
+// @Tags Comments
 // @Accept json
 // @Param movie_id path int true "Movie ID"
 // @Param comment body model.Comment true "Comment"

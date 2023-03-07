@@ -25,11 +25,8 @@ const docTemplate = `{
         "/characters/{movie_id}": {
             "get": {
                 "description": "Get all characters in a movie",
-                "consumes": [
-                    "application/json"
-                ],
                 "tags": [
-                    "Movies"
+                    "Characters"
                 ],
                 "summary": "Get all characters in a movie",
                 "parameters": [
@@ -117,9 +114,6 @@ const docTemplate = `{
         "/comments/{movie_id}": {
             "get": {
                 "description": "Get all comments for a movie",
-                "consumes": [
-                    "application/json"
-                ],
                 "tags": [
                     "Comments"
                 ],
@@ -211,7 +205,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Movies"
+                    "Comments"
                 ],
                 "summary": "Add a comment to a movie",
                 "parameters": [
@@ -293,9 +287,6 @@ const docTemplate = `{
         "/movies": {
             "get": {
                 "description": "Get all movies",
-                "consumes": [
-                    "application/json"
-                ],
                 "tags": [
                     "Movies"
                 ],
@@ -377,18 +368,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
         "model.Character": {
             "type": "object",
             "properties": {
@@ -406,25 +385,22 @@ const docTemplate = `{
         "model.Comment": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "id": {
                     "type": "string"
                 },
-                "ipv4Addr": {
+                "ipv4_addr": {
                     "type": "string"
                 },
                 "message": {
                     "type": "string"
                 },
-                "swapiMovieID": {
+                "swapi_movie_id": {
                     "type": "integer"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -456,17 +432,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "comment_count": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
                 "id": {
                     "type": "integer",
                     "example": 1
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "A New Hope"
                 },
                 "opening_crawl": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "It is a period of civil war. Rebel spaceships, striking from a hidden base, have won their first victory against the evil Galactic Empire."
                 }
             }
         }
