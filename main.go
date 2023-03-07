@@ -1,10 +1,12 @@
 package main
 
 import (
+	"github.com/go-resty/resty/v2"
 	"github.com/iamnator/movie-api/docs"
 	"github.com/iamnator/movie-api/service"
 	"github.com/iamnator/movie-api/thirdparty/swapi"
 	"log"
+	"time"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -13,6 +15,7 @@ import (
 	"github.com/iamnator/movie-api/adapter/repository"
 	"github.com/iamnator/movie-api/env"
 	"github.com/iamnator/movie-api/handler/http"
+	//_ "github.com/iamnator/movie-api/terminal"
 )
 
 //	@title			Busha Movie API documentation
@@ -56,7 +59,10 @@ func main() {
 	}
 	log.Println("Connected to postgres")
 
-	swapiClient, err := swapi.NewSwapi()
+	restyClient := resty.New()
+	restyClient.SetTimeout(120 * time.Second)
+	restyClient.SetRetryCount(3)
+	swapiClient, err := swapi.NewSwapi(restyClient.GetClient())
 	if err != nil {
 		panic(err)
 	}

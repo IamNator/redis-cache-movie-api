@@ -9,12 +9,13 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.7
-	github.com/peterhellberg/swapi v0.0.0-20230222134402-c0bd79f5129c
 	gorm.io/driver/postgres v1.4.8
 	gorm.io/gorm v1.24.6
 )
 
 require (
+	github.com/RediSearch/redisearch-go v1.1.1
+	github.com/go-resty/resty/v2 v2.7.0
 	github.com/rs/zerolog v1.29.0
 	github.com/swaggo/swag v1.8.10
 )
@@ -36,6 +37,7 @@ require (
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-openapi/validate v0.21.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
+	github.com/gomodule/redigo v1.8.3 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect

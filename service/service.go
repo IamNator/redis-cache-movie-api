@@ -31,8 +31,21 @@ func NewServices(cache ports.ICache, commentRepository ports.ICommentRepository,
 	}
 
 	go func() {
+
+		for {
+			log.Info().Msg("running background job ...")
+			if err := srv.backGroundJOB(); err == nil {
+				log.Info().Msg("background job ran successfully")
+				break
+			} else {
+				log.Error().Err(err).Msg("error running background job, retrying ...")
+			}
+		}
+
 		//runs every 3 hours
 		ticker := time.NewTicker(3 * time.Hour)
+		defer ticker.Stop()
+
 		for range ticker.C {
 			if err := srv.backGroundJOB(); err != nil {
 				log.Error().Err(err).Msg("error running background job")
@@ -95,7 +108,6 @@ func (s service) GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) ([
 }
 
 func (s service) SaveComment(movieID int, comment model.Comment) error {
-	comment.ID = uuid.New()
 
 	//check if movie exists
 	_, err := s.cache.GetMovieByID(movieID)
@@ -105,7 +117,7 @@ func (s service) SaveComment(movieID int, comment model.Comment) error {
 	}
 
 	comment = model.Comment{
-		ID:           comment.ID,
+		ID:           uuid.New(),
 		SwapiMovieID: comment.SwapiMovieID,
 		Message:      comment.Message,
 		IPv4Addr:     comment.IPv4Addr,

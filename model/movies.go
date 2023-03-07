@@ -4,13 +4,15 @@ import "time"
 
 type (
 	MovieDetails struct {
-		ID           int       `json:"id"`
+		ID           int       `json:"id"` // SwapiMovieID
 		Name         string    `json:"title"`
 		EpisodeID    int       `json:"episode_id"`
 		OpeningCrawl string    `json:"opening_crawl"`
 		Director     string    `json:"director"`
 		Producer     string    `json:"producer"`
 		ReleaseDate  time.Time `json:"release_date"`
+		CreatedAt    time.Time `json:"created_at"`
+		UpdatedAt    time.Time `json:"updated_at"`
 	}
 )
 

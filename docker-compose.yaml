@@ -24,7 +24,7 @@ services:
       - default
 
   redis:
-    image: redis:alpine
+    image: redis/redis-stack-server:latest
     container_name: redis
     ports:
       - '6379:6379'

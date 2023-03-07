@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/iamnator/movie-api/service"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"strconv"
 	"time"
@@ -36,6 +37,18 @@ func Run(port string, r *mux.Router, srv service.IServices) error {
 	r.Path("/swagger.yaml").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "docs/swagger.yaml")
 	})
+
+	//add logging middleware
+	loggingMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+			next.ServeHTTP(w, r)
+			elapsed := time.Since(start)
+			log.Info().Msgf("%s %s in %s", r.Method, r.RequestURI, elapsed)
+		})
+	}
+
+	r.Use(loggingMiddleware)
 
 	r.HandleFunc("/movies", handler.getMoviesHandler).Methods(http.MethodGet)
 	r.HandleFunc("/characters/{movie_id}", handler.getMovieCharacterHandler).Methods(http.MethodGet)
@@ -73,8 +86,8 @@ func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64
 //	@Tags			Movies
 //	@Param			page		query		int	false	"Page number"
 //	@Param			pageSize	query		int	false	"Page size"
-//	@Success		200			{object}	model.GenericResponse{data=[]model.Movie}
-//	@Failure		400,502		{object}	model.GenericResponse{error=string}
+//	@Success		200			{object}	model.GenericResponse{data=[]model.Movie, count="10", message="Success"}
+//	@Failure		400,502		{object}	model.GenericResponse{error=string, message="Error getting movies"}
 //	@Router			/movies [get]
 func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 

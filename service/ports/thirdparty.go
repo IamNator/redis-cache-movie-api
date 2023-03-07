@@ -1,9 +1,12 @@
 package ports
 
-import "github.com/peterhellberg/swapi"
+import (
+	"context"
+	swapi "github.com/iamnator/movie-api/thirdparty/swapi/lib"
+)
 
 //go:generate mockgen -destination=../mocks/thirdparty.go -package=mocks github.com/iamnator/movie-api/adapter/thirdparty/ports ISwapi
 type ISwapi interface {
-	GetFilms(id ...int) ([]swapi.Film, error)
-	GetCharacters(id ...int) ([]swapi.Person, error)
+	GetFilms(ctx context.Context, id ...int) ([]swapi.Film, error)
+	GetCharacters(ctx context.Context, id ...int) ([]swapi.Person, error)
 }

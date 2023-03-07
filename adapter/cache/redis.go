@@ -2,15 +2,18 @@ package cache
 
 import (
 	"context"
-	redis "github.com/go-redis/redis/v8"
-	"strconv"
-
+	"github.com/RediSearch/redisearch-go/redisearch"
+	"github.com/go-redis/redis/v8"
+	goredis "github.com/gomodule/redigo/redis"
 	"github.com/iamnator/movie-api/model"
 	"github.com/iamnator/movie-api/service/ports"
+	"strconv"
+	"time"
 )
 
 type RedisCache struct {
-	client *redis.Client
+	redisearchClient *redisearch.Client
+	//redisClient      *redis.Client
 }
 
 func NewRedisCache(url string) (*RedisCache, error) {
@@ -20,57 +23,63 @@ func NewRedisCache(url string) (*RedisCache, error) {
 		return nil, err
 	}
 
-	//opts.TLSConfig = &tls.Config{
-	//	InsecureSkipVerify: true,
-	//
-	//}
-	client := redis.NewClient(opts)
+	redisClient := redis.NewClient(opts)
 
-	if _, err := client.Ping(context.TODO()).Result(); err != nil {
+	if _, err := redisClient.Ping(context.TODO()).Result(); err != nil {
 		return nil, err
 	}
 
-	return &RedisCache{client: client}, nil
+	pool := &goredis.Pool{Dial: func() (goredis.Conn, error) {
+		return goredis.Dial(opts.Network, opts.Addr, goredis.DialPassword(opts.Password))
+	}}
+
+	// Create a RedisSearch redis-searchClient
+	client := redisearch.NewClientFromPool(pool, "busha_movie_api")
+
+	if err := createMovieSchema(client); err != nil {
+		return nil, err
+	}
+
+	if err := createCharacterSchema(client); err != nil {
+		return nil, err
+	}
+
+	return &RedisCache{redisearchClient: client}, nil
 }
 
 var _ ports.ICache = (*RedisCache)(nil)
 
-type (
-	cacheTag string
-)
-
-func (tag cacheTag) String() string {
-	return string(tag)
-}
-
-func (tag cacheTag) computeKey(id int) string {
-	return tag.String() + ":" + strconv.Itoa(id)
-}
-
-func (tag cacheTag) computeParentKey(id int) cacheTag {
-	return cacheTag(tag.computeKey(id))
-}
-
-const (
-	movieTag     cacheTag = "movie"
-	characterTag cacheTag = "character"
-
-	// DefaultTTLSec is the default TTL for cache entries
-	DefaultTTLSec = 0
-)
-
 func (r RedisCache) SetMovies(movies []model.MovieDetails) error {
 
-	pipe := r.client.TxPipeline()
+	// Create a document from movies
+
+	var docs redisearch.DocumentList
+	var doc redisearch.Document
+	var movieID string
 
 	for _, movie := range movies {
-		if err := pipe.Set(context.Background(), movieTag.computeKey(movie.ID), movie, DefaultTTLSec).Err(); err != nil {
-			return err
-		}
+		movieID = strconv.Itoa(movie.ID)
+		doc = redisearch.NewDocument(movieID, 1.0).
+			Set("id", movie.ID).
+			Set("name", movie.Name).
+			Set("release_date", movie.ReleaseDate.UTC().Format(time.RFC3339)).
+			Set("director", movie.Director).
+			Set("producer", movie.Producer).
+			Set("opening_crawl", movie.OpeningCrawl).
+			Set("created_at", movie.CreatedAt.UTC().Format(time.RFC3339)).
+			Set("updated_at", movie.UpdatedAt.UTC().Format(time.RFC3339))
+
+		docs = append(docs, doc)
 	}
 
-	_, err := pipe.Exec(context.Background())
-	if err != nil {
+	// Add the document to the index
+	if err := r.redisearchClient.IndexOptions(redisearch.IndexingOptions{
+		Language:         redisearch.DefaultIndexingOptions.Language,
+		NoSave:           redisearch.DefaultIndexingOptions.NoSave,
+		Replace:          true,
+		Partial:          true,
+		ReplaceCondition: redisearch.DefaultIndexingOptions.ReplaceCondition, // replace only if the document exists
+	}, docs...); err != nil {
 		return err
 	}
 
@@ -79,7 +88,21 @@ func (r RedisCache) SetMovies(movies []model.MovieDetails) error {
 
 func (r RedisCache) SetMovieByID(id int, movie model.MovieDetails) error {
 
-	if err := r.client.Set(context.Background(), movieTag.computeKey(id), movie, DefaultTTLSec).Err(); err != nil {
+	// Create a document from movies
+	doc := redisearch.NewDocument(strconv.Itoa(movie.ID), 1.0)
+
+	doc.
+		Set("id", movie.ID).
+		Set("name", movie.Name).
+		Set("release_date", movie.ReleaseDate.UTC().Format(time.RFC3339)).
+		Set("director", movie.Director).
+		Set("producer", movie.Producer).
+		Set("opening_crawl", movie.OpeningCrawl).
+		Set("created_at", movie.CreatedAt.UTC().Format(time.RFC3339)).
+		Set("updated_at", movie.UpdatedAt.UTC().Format(time.RFC3339))
+
+	// Add the document to the index
+	if err := r.redisearchClient.IndexOptions(redisearch.DefaultIndexingOptions, doc); err != nil {
 		return err
 	}
 
@@ -88,18 +111,23 @@ func (r RedisCache) SetMovieByID(id int, movie model.MovieDetails) error {
 
 func (r RedisCache) SetCharactersByMovieID(movieID int, characters []model.Character) error {
 
-	pipe := r.client.TxPipeline()
+	// Create a document from movies
+	var docs redisearch.DocumentList
+	var doc redisearch.Document
 
 	for _, character := range characters {
-		if err := pipe.Set(context.Background(),
-			characterTag.computeParentKey(movieID).computeKey(character.ID),
-			character, DefaultTTLSec).Err(); err != nil {
-			return err
-		}
+		doc = redisearch.NewDocument(computeCharacterKey(character.MovieID, character.ID), 1.0).
+			Set("id", character.ID).
+			Set("name", character.Name).
+			Set("movie_id", character.MovieID).
+			Set("gender", character.Gender).
+			Set("height_cm", character.HeightCm)
+
+		docs = append(docs, doc)
 	}
 
-	_, err := pipe.Exec(context.Background())
-	if err != nil {
+	// Add the document to the index
+	if err := r.redisearchClient.IndexOptions(redisearch.DefaultIndexingOptions, docs...); err != nil {
 		return err
 	}
 
@@ -108,83 +136,83 @@ func (r RedisCache) SetCharactersByMovieID(movieID int, characters []model.Chara
 
 func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, error) {
 
-	keys, count, err := fetchData(context.Background(), r.client, movieTag, page, pageSize)
-	if err != nil {
-		return nil, 0, err
-	}
-
 	var movies []model.MovieDetails
 
-	var movie model.MovieDetails
+	if page < 1 {
+		page = 1
+	}
 
-	for _, key := range keys {
+	query := redisearch.NewQuery("*").
+		Limit((page-1)*pageSize, pageSize)
 
-		if err := r.client.Get(context.Background(), key).Scan(&movie); err != nil {
-			return nil, 0, err
-		}
+	docs, count, err := r.redisearchClient.Search(query)
+	if err != nil {
+		return movies, 0, err
+	}
+
+	for _, doc := range docs {
+		var movie model.MovieDetails
+		movie.ID = doc.Properties["id"].(int)
+		movie.Name = doc.Properties["name"].(string)
+		movie.ReleaseDate, _ = time.Parse(time.RFC3339, doc.Properties["release_date"].(string))
+		movie.Director = doc.Properties["director"].(string)
+		movie.Producer = doc.Properties["producer"].(string)
+		movie.OpeningCrawl = doc.Properties["opening_crawl"].(string)
+		movie.CreatedAt, _ = time.Parse(time.RFC3339, doc.Properties["created_at"].(string))
+		movie.UpdatedAt, _ = time.Parse(time.RFC3339, doc.Properties["updated_at"].(string))
 
 		movies = append(movies, movie)
 	}
 
-	return movies, count, nil
+	return movies, int64(count), nil
 }
 
 func (r RedisCache) GetMovieByID(id int) (*model.MovieDetails, error) {
 	var movie model.MovieDetails
 
-	if err := r.client.Get(context.Background(), movieTag.computeKey(id)).Scan(&movie); err != nil {
+	docs, err := r.redisearchClient.Get(computeMovieKey(id))
+	if err != nil {
 		return nil, err
 	}
+
+	movie.ID = docs.Properties["id"].(int)
+	movie.Name = docs.Properties["name"].(string)
+	movie.ReleaseDate, _ = time.Parse(time.RFC3339, docs.Properties["release_date"].(string))
+	movie.Director = docs.Properties["director"].(string)
+	movie.Producer = docs.Properties["producer"].(string)
+	movie.OpeningCrawl = docs.Properties["opening_crawl"].(string)
+	movie.CreatedAt, _ = time.Parse(time.RFC3339, docs.Properties["created_at"].(string))
+	movie.UpdatedAt, _ = time.Parse(time.RFC3339, docs.Properties["updated_at"].(string))
 
 	return &movie, nil
 }
 
 func (r RedisCache) GetCharactersByMovieID(movieID int, page, pageSize int) ([]model.Character, int64, error) {
 
-	keys, count, err := fetchData(context.Background(), r.client, characterTag, page, pageSize)
+	query := redisearch.NewQuery("character").
+		Limit((page-1)*pageSize, pageSize).
+		SetSortBy("name", false)
+
+	docs, count, err := r.redisearchClient.Search(query)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	var characters []model.Character
-
 	var character model.Character
 
-	for _, key := range keys {
+	for _, doc := range docs {
 
-		if err := r.client.Get(context.Background(), key).Scan(&character); err != nil {
-			return nil, 0, err
+		character = model.Character{
+			ID:       doc.Properties["id"].(int),
+			Name:     doc.Properties["name"].(string),
+			MovieID:  doc.Properties["movie_id"].(int),
+			Gender:   doc.Properties["gender"].(string),
+			HeightCm: doc.Properties["height_cm"].(int),
 		}
 
 		characters = append(characters, character)
 	}
 
-	return characters, count, nil
-}
-
-func fetchData(ctx context.Context, client *redis.Client, tag cacheTag, page int, pageSize int) ([]string, int64, error) {
-	var keys []string
-	var err error
-
-	if page < 1 {
-		page = 1
-	}
-
-	// Calculate start and end positions based on page and pageSize
-	start := (page - 1) * pageSize
-	end := start + pageSize - 1
-
-	//Get the total number of keys in the list
-	total, err := client.LLen(ctx, tag.String()).Result()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	// Use Redis command to retrieve keys in the specified range
-	keys, err = client.LRange(ctx, tag.String()+":*", int64(start), int64(end)).Result()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return keys, total, nil
+	return characters, int64(count), nil
 }

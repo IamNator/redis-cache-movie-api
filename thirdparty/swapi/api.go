@@ -2,13 +2,14 @@ package swapi
 
 import (
 	"context"
-	"github.com/peterhellberg/swapi"
+	swapi "github.com/iamnator/movie-api/thirdparty/swapi/lib"
+	"net/http"
 )
 
 type (
 	ISwapi interface {
-		GetFilms(id ...int) ([]swapi.Film, error)
-		GetCharacters(id ...int) ([]swapi.Person, error)
+		GetFilms(ctx context.Context, id ...int) ([]swapi.Film, error)
+		GetCharacters(ctx context.Context, id ...int) ([]swapi.Person, error)
 	}
 
 	Swapi struct {
@@ -16,48 +17,53 @@ type (
 	}
 )
 
-func NewSwapi() (ISwapi, error) {
-	c := swapi.NewClient(swapi.UserAgent("busha_swapi/1.0"))
+func NewSwapi(hc *http.Client) (ISwapi, error) {
+
+	opts := swapi.HTTPClient(hc)
+
+	c := swapi.NewClient(opts)
 
 	return &Swapi{
 		client: c,
 	}, nil
 }
 
-func (s *Swapi) GetFilms(id ...int) ([]swapi.Film, error) {
+func (s *Swapi) GetFilms(ctx context.Context, id ...int) ([]swapi.Film, error) {
 	var films []swapi.Film
+
 	if len(id) > 0 {
 		for _, i := range id {
-			film, err := s.client.Film(context.Background(), i)
+			film, err := s.client.Film(ctx, i)
 			if err != nil {
 				return nil, err
 			}
 			films = append(films, film)
 		}
 	} else {
-		_films, err := s.client.AllFilms(context.Background())
+		_films, err := s.client.AllFilms(ctx)
 		if err != nil {
 			return nil, err
 		}
+		
 		films = append(films, _films...)
 	}
 
-	return nil, nil
+	return films, nil
 }
 
-func (s *Swapi) GetCharacters(id ...int) ([]swapi.Person, error) {
+func (s *Swapi) GetCharacters(ctx context.Context, id ...int) ([]swapi.Person, error) {
 
 	var characters []swapi.Person
 	if len(id) > 0 {
 		for _, i := range id {
-			character, err := s.client.Person(context.Background(), i)
+			character, err := s.client.Person(ctx, i)
 			if err != nil {
 				return nil, err
 			}
 			characters = append(characters, character)
 		}
 	} else {
-		_characters, err := s.client.AllPeople(context.Background())
+		_characters, err := s.client.AllPeople(ctx)
 		if err != nil {
 			return nil, err
 		}
