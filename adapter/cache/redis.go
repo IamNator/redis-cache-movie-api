@@ -7,6 +7,7 @@ import (
 	goredis "github.com/gomodule/redigo/redis"
 	"github.com/iamnator/movie-api/model"
 	"github.com/iamnator/movie-api/service/ports"
+	"github.com/rs/zerolog/log"
 	"strconv"
 	"time"
 )
@@ -55,11 +56,10 @@ func (r RedisCache) SetMovies(movies []model.MovieDetails) error {
 
 	var docs redisearch.DocumentList
 	var doc redisearch.Document
-	var movieID string
 
 	for _, movie := range movies {
-		movieID = strconv.Itoa(movie.ID)
-		doc = redisearch.NewDocument(movieID, 1.0).
+
+		doc = redisearch.NewDocument(computeMovieKey(movie.ID), 1.0).
 			Set("id", movie.ID).
 			Set("name", movie.Name).
 			Set("release_date", movie.ReleaseDate.UTC().Format(time.RFC3339)).
@@ -86,13 +86,13 @@ func (r RedisCache) SetMovies(movies []model.MovieDetails) error {
 	return nil
 }
 
-func (r RedisCache) SetMovieByID(id int, movie model.MovieDetails) error {
+func (r RedisCache) SetMovieByID(movieID int, movie model.MovieDetails) error {
 
 	// Create a document from movies
-	doc := redisearch.NewDocument(strconv.Itoa(movie.ID), 1.0)
+	doc := redisearch.NewDocument(computeMovieKey(movieID), 1.0)
 
 	doc.
-		Set("id", movie.ID).
+		Set("id", movieID).
 		Set("name", movie.Name).
 		Set("release_date", movie.ReleaseDate.UTC().Format(time.RFC3339)).
 		Set("director", movie.Director).
@@ -142,8 +142,7 @@ func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, 
 		page = 1
 	}
 
-	query := redisearch.NewQuery("*").
-		Limit((page-1)*pageSize, pageSize)
+	query := redisearch.NewQuery("*")
 
 	docs, count, err := r.redisearchClient.Search(query)
 	if err != nil {
@@ -163,6 +162,8 @@ func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, 
 
 		movies = append(movies, movie)
 	}
+
+	log.Info().Msgf("Found %d movies", count)
 
 	return movies, int64(count), nil
 }
@@ -189,7 +190,7 @@ func (r RedisCache) GetMovieByID(id int) (*model.MovieDetails, error) {
 
 func (r RedisCache) GetCharactersByMovieID(movieID int, page, pageSize int) ([]model.Character, int64, error) {
 
-	query := redisearch.NewQuery("character").
+	query := redisearch.NewQuery(computeCharacterKey(strconv.Itoa(movieID), "*")).
 		Limit((page-1)*pageSize, pageSize).
 		SetSortBy("name", false)
 

@@ -2,6 +2,7 @@ package cache
 
 import (
 	"github.com/RediSearch/redisearch-go/redisearch"
+	"github.com/rs/zerolog/log"
 )
 
 func createMovieSchema(client *redisearch.Client) error {
@@ -13,14 +14,16 @@ func createMovieSchema(client *redisearch.Client) error {
 		AddField(redisearch.NewTextField("opening_crawl")).
 		AddField(redisearch.NewTextField("director")).
 		AddField(redisearch.NewTextField("producer")).
-		AddField(redisearch.NewTextFieldOptions("release_date", redisearch.TextFieldOptions{Weight: 5.0, Sortable: true})).
-		AddField(redisearch.NewSortableTextField("created_at", 1)).
-		AddField(redisearch.NewSortableTextField("updated_at", 1))
+		AddField(redisearch.NewTextFieldOptions("release_date", redisearch.TextFieldOptions{Sortable: true})).
+		AddField(redisearch.NewTextField("created_at")).
+		AddField(redisearch.NewTextField("updated_at"))
 
 	// Create a RedisSearch index definition
 	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("movie:")
 
-	client.DropIndex(false)
+	if er := client.Drop(); er != nil {
+		log.Info().Msgf("Error dropping index: %v", er)
+	}
 
 	// Create the RedisSearch index
 	err := client.CreateIndexWithIndexDefinition(schema, indexDefinition)
@@ -43,7 +46,7 @@ func createCharacterSchema(client *redisearch.Client) error {
 	// Create a RedisSearch index definition
 	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("character:")
 
-	client.DropIndex(false)
+	client.Drop()
 
 	// Create the RedisSearch index
 	err := client.CreateIndexWithIndexDefinition(schema, indexDefinition)
