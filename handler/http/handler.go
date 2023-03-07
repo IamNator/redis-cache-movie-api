@@ -3,6 +3,8 @@ package http
 import (
 	"encoding/json"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/iamnator/movie-api/docs"
+	"github.com/iamnator/movie-api/env"
 	"github.com/iamnator/movie-api/service"
 	"net/http"
 	"strconv"
@@ -26,13 +28,17 @@ func Run(port string, r *mux.Router, srv service.IServices) error {
 
 	handler := NewHandlers(srv)
 
-	// programmatically set swagger info
-	//docs.SwaggerInfo.Title = "Busha Movie API"
-	//docs.SwaggerInfo.Description = "This is a sample server for a movie API."
-	//docs.SwaggerInfo.Version = "1.0"
-	//docs.SwaggerInfo.Host = "busha-movie-api-v1.herokuapp.com"
-	//docs.SwaggerInfo.BasePath = "/"
-	//docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	//programmatically set swagger info
+	docs.SwaggerInfo.Title = "Busha Movie API"
+	docs.SwaggerInfo.Description = "This is a sample server for a movie API."
+	docs.SwaggerInfo.Version = "1.0"
+
+	if env.Get().HOST_MACHINE != "" {
+		docs.SwaggerInfo.Host = env.Get().HOST_MACHINE
+	}
+
+	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	// documentation for developers
 	opts := middleware.SwaggerUIOpts{SpecURL: "./docs/swagger.json"}

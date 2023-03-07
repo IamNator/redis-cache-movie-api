@@ -11,6 +11,7 @@ services:
       - PORT=9500
       - DATABASE_URL=postgres://postgres:password@busha_db:5432/busha
       - REDISCLOUD_URL=redis://redis:6379
+      - HOST_MACHINE=localhost:9500
     container_name: api
     ports:
       - 9500:9500

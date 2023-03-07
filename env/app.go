@@ -10,6 +10,7 @@ type (
 		PORT         string `json:"port"`
 		REDIS_URL    string `json:"redis_url"`
 		POSTGRES_URL string `json:"postgres_url"`
+		HOST_MACHINE string `json:"host_machine"`
 	}
 )
 
@@ -23,6 +24,7 @@ func Init() error {
 		defaultEnv.PORT = os.Getenv("PORT")
 		defaultEnv.REDIS_URL = os.Getenv("REDISCLOUD_URL")
 		defaultEnv.POSTGRES_URL = os.Getenv("DATABASE_URL")
+		defaultEnv.HOST_MACHINE = os.Getenv("HOST_MACHINE")
 	})
 
 	return nil
