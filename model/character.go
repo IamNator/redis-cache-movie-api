@@ -2,6 +2,8 @@ package model
 
 type (
 	Character struct {
+		ID       int    `json:"character_id"` //from swapi
+		MovieID  int    `json:"movie_id"`     //from swapi
 		Name     string `json:"name"`
 		Gender   string `json:"gender"`
 		HeightCm int    `json:"height_cm"`

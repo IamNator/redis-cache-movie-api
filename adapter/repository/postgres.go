@@ -74,3 +74,7 @@ func (p PgxCommentRepository) GetCommentsByMovieID(movieID int, page, pageSize i
 		Order("created_at DESC").
 		Find(&comments).Error
 }
+
+func (p PgxCommentRepository) GetCommentCountByMovieID(movieID int) (count int64, err error) {
+	return count, p.db.Model(&model.Comment{}).Where("movie_id = ?", movieID).Count(&count).Error
+}

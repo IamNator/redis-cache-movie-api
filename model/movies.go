@@ -5,7 +5,7 @@ import "time"
 type (
 	MovieDetails struct {
 		ID           int       `json:"id"`
-		Title        string    `json:"title"`
+		Name         string    `json:"title"`
 		EpisodeID    int       `json:"episode_id"`
 		OpeningCrawl string    `json:"opening_crawl"`
 		Director     string    `json:"director"`

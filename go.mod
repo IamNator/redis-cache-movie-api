@@ -14,7 +14,10 @@ require (
 	gorm.io/gorm v1.24.6
 )
 
-require github.com/swaggo/swag v1.8.10
+require (
+	github.com/rs/zerolog v1.29.0
+	github.com/swaggo/swag v1.8.10
+)
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
@@ -41,6 +44,8 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	go.mongodb.org/mongo-driver v1.8.3 // indirect

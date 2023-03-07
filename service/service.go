@@ -1,9 +1,13 @@
 package service
 
 import (
+	"errors"
+	"github.com/google/uuid"
 	"github.com/iamnator/movie-api/model"
 	"github.com/iamnator/movie-api/service/ports"
+	"github.com/rs/zerolog/log"
 	"sort"
+	"time"
 )
 
 type IServices interface {
@@ -19,19 +23,34 @@ type service struct {
 	swapiClient       ports.ISwapi
 }
 
-func NewServices(cache ports.ICache, commentRepository ports.ICommentRepository, swapiClient ports.ISwapi) service {
-	return service{
+func NewServices(cache ports.ICache, commentRepository ports.ICommentRepository, swapiClient ports.ISwapi) IServices {
+	srv := service{
 		cache:             cache,
 		commentRepository: commentRepository,
 		swapiClient:       swapiClient,
 	}
+
+	go func() {
+		//runs every 3 hours
+		ticker := time.NewTicker(3 * time.Hour)
+		for range ticker.C {
+			if err := srv.backGroundJOB(); err != nil {
+				log.Error().Err(err).Msg("error running background job")
+			} else {
+				log.Info().Msg("background job ran successfully")
+			}
+		}
+	}()
+
+	return srv
 }
 
 func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 
 	movies, _, err := s.cache.GetMovies(page, pageSize)
 	if err != nil {
-		return nil, 0, err
+		log.Debug().Err(err).Msg("error getting movies from cache")
+		return nil, 0, errors.New("error getting movies from cache")
 	}
 
 	sort.Slice(movies, func(i, j int) bool {
@@ -41,13 +60,15 @@ func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 	var movieList []model.Movie
 	for _, movie := range movies {
 
-		_, count, err := s.commentRepository.GetCommentsByMovieID(movie.ID, 1, 1)
+		count, err := s.commentRepository.GetCommentCountByMovieID(movie.ID)
 		if err != nil {
-			return nil, 0, err
+			log.Error().Err(err).Msg("error getting comment count")
+			return nil, 0, errors.New("error getting comment count")
 		}
 
 		movieList = append(movieList, model.Movie{
-			Name:         movie.Title,
+			SwapiMovieID: movie.ID,
+			Name:         movie.Name,
 			OpeningCrawl: movie.OpeningCrawl,
 			CommentCount: count,
 		})
@@ -57,13 +78,61 @@ func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 }
 
 func (s service) SaveComment(movieID int, comment model.Comment) error {
-	return s.commentRepository.AddComment(comment)
+	comment.ID = uuid.New()
+
+	//check if movie exists
+	_, err := s.cache.GetMovieByID(movieID)
+	if err != nil {
+		log.Debug().Err(err).Msg("movie not found")
+		return errors.New("movie not found")
+	}
+
+	comment = model.Comment{
+		ID:           comment.ID,
+		SwapiMovieID: comment.SwapiMovieID,
+		Message:      comment.Message,
+		IPv4Addr:     comment.IPv4Addr,
+		CreatedAt:    comment.CreatedAt,
+	}
+
+	if err := s.commentRepository.AddComment(comment); err != nil {
+		log.Error().Err(err).Msg("error saving comment")
+		return errors.New("error saving comment")
+	}
+
+	return err
 }
 
 func (s service) GetComment(movieID int, page, pageSize int) ([]model.Comment, int64, error) {
-	return s.commentRepository.GetCommentsByMovieID(movieID, page, pageSize)
+	//check if movie exists
+	movie, err := s.cache.GetMovieByID(movieID)
+	if err != nil {
+		log.Debug().Err(err).Msg("movie not found")
+		return nil, 0, errors.New("movie not found")
+	}
+
+	comments, count, err := s.commentRepository.GetCommentsByMovieID(movie.ID, page, pageSize)
+	if err != nil {
+		log.Error().Err(err).Msg("error getting comments")
+		return nil, 0, errors.New("error getting comments")
+	}
+
+	return comments, count, nil
 }
 
 func (s service) GetCharactersByMovieID(movieID int, page, pageSize int) ([]model.Character, int64, error) {
-	return s.cache.GetCharactersByMovieID(movieID, page, pageSize)
+	//check if movie exists
+	movie, err := s.cache.GetMovieByID(movieID)
+	if err != nil {
+		log.Debug().Err(err).Msg("movie not found")
+		return nil, 0, errors.New("movie not found")
+	}
+
+	characters, count, err := s.cache.GetCharactersByMovieID(movie.ID, page, pageSize)
+	if err != nil {
+		log.Error().Err(err).Msg("error getting characters")
+		return nil, 0, errors.New("error getting characters")
+	}
+
+	return characters, count, nil
 }

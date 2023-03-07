@@ -12,4 +12,5 @@ type ICommentRepository interface {
 	GetCommentsByID(commentID ...uuid.UUID) ([]model.Comment, error)
 	GetCommentsByIPAddr(ipAddr string, page, pageSize int) ([]model.Comment, int64, error)
 	GetCommentsByMovieID(movieID int, page, pageSize int) ([]model.Comment, int64, error)
+	GetCommentCountByMovieID(movieID int) (int64, error)
 }

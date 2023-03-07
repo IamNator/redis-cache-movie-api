@@ -8,7 +8,7 @@ const docTemplate = `{
     "swagger": "2.0",
     "info": {
         "description": "{{escape .Description}}",
-        "title": "{{.Title}}",
+        "title": "{{.Name}}",
         "contact": {
             "name": "Busha Support",
             "email": "natorverinumbe@gmail.com"
