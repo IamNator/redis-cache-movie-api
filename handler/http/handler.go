@@ -89,13 +89,13 @@ func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 		pageSize = 10
 	}
 
-	movieList, _, err := h.service.GetMovies(page, pageSize)
+	movieList, count, err := h.service.GetMovies(page, pageSize)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error getting movies", err)
 		return
 	}
 
-	_ = json.NewEncoder(w).Encode(movieList)
+	respondWithSuccess(w, http.StatusOK, "Success", count, movieList)
 }
 
 // getMovieCharacterHandler handles the request to get all characters in a movie

@@ -13,6 +13,7 @@
         },
         "version": "1.0.0"
     },
+    "host": "localhost:9500",
     "paths": {
         "/characters/{movie_id}": {
             "get": {

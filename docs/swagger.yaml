@@ -61,6 +61,7 @@ definitions:
           base, have won their first victory against the evil Galactic Empire.
         type: string
     type: object
+host: localhost:9500
 info:
   contact:
     email: natorverinumbe@gmail.com
