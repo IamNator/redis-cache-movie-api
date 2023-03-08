@@ -38,7 +38,7 @@ func createCharacterSchema(ctx context.Context, client *redis.Client) error {
 		"id", "NUMERIC",
 		"name", "TEXT", "WEIGHT", "5.0",
 		"movie_id", "NUMERIC", "SORTABLE",
-		"gender", "TEXT", "WEIGHT", "5", "SORTABLE",
+		"gender", "TEXT", "WEIGHT", "5.0", "SORTABLE",
 		"height_cm", "NUMERIC").
 		Err()
 	if err != nil {

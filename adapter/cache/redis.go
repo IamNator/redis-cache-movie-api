@@ -2,8 +2,9 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"github.com/rs/zerolog/log"
-	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -161,64 +162,6 @@ func (r RedisCache) SetCharactersByMovieID(movieID int, characters []model.Chara
 //
 //
 
-func parse_movie_data(text string) []map[string]interface{} {
-
-	// Regular expression to match each movie record
-	pattern := regexp.MustCompile(`\[(\d+)\s+movie:(\d+)\s+\[(.*?)\]\s*\]`)
-	movies := []map[string]interface{}{}
-
-	// Loop through all matches of the pattern in the text
-	for _, match := range pattern.FindAllStringSubmatch(text, -1) {
-
-		//movie_id := parseInt(match[2])
-		// Split the movie record into key-value pairs
-		pairs_str := strings.Split(match[3], ",")
-		pairs := make([][]string, len(pairs_str))
-		for i, s := range pairs_str {
-			pairs[i] = strings.SplitN(strings.TrimSpace(s), " ", 2)
-		}
-		// Convert release date and created/updated timestamps to time.Time objects
-		for i := range pairs {
-			key, value := pairs[i][0], pairs[i][1]
-			if key == "release_date" || key == "created_at" || key == "updated_at" {
-				t, err := time.Parse("2006-01-02T15:04:05Z", value[:len(value)-1])
-				if err == nil {
-					pairs[i][1] = t.UTC().String()
-				}
-			}
-		}
-		// Create a map for the movie record
-		movie := map[string]interface{}{}
-		for _, pair := range pairs {
-			key, value := pair[0], pair[1]
-			//switch key {
-			//case "title", "overview", "poster_path", "homepage":
-			//	movie[key] = value
-			//case "release_date", "created_at", "updated_at":
-			//	movie[key] = value
-			//default:
-			// ignore unknown key
-			//}
-			movie[key] = value
-		}
-
-		// Add the movie map to the list of movies
-		movies = append(movies, movie)
-	}
-
-	return movies
-}
-
-//
-//func parseInt(s string) int {
-//	var n int
-//	_, err := fmt.Sscan(s, &n)
-//	if err != nil {
-//		return 0
-//	}
-//	return n
-//}
-
 func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, error) {
 
 	if page < 1 {
@@ -235,11 +178,20 @@ func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, 
 	}
 
 	var movies []model.MovieDetails
+	var id string
+	var movie model.MovieDetails
 
 	for _, doc := range docs {
-		var movie model.MovieDetails
+		movie = model.MovieDetails{}
+		id = doc.Properties["id"].(string)
 
-		//movie.ID = doc.Properties["id"].(int)
+		if strings.Contains(id, ":") {
+			id = strings.Split(id, ":")[1]
+			movie.ID, _ = strconv.Atoi(id)
+		} else {
+			movie.ID, _ = strconv.Atoi(id)
+		}
+
 		movie.Name = doc.Properties["name"].(string)
 		movie.ReleaseDate, _ = time.Parse(time.RFC3339, doc.Properties["release_date"].(string))
 		movie.Director = doc.Properties["director"].(string)
@@ -259,12 +211,26 @@ func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, 
 func (r RedisCache) GetMovieByID(id int) (*model.MovieDetails, error) {
 	var movie model.MovieDetails
 
-	docs, err := r.movieIndex.Get(computeMovieKey(id))
+	mvId := computeMovieKey(id)
+	log.Info().Msgf("movie id: %v", mvId)
+
+	docs, err := r.movieIndex.Get(mvId)
 	if err != nil {
 		return nil, err
 	}
 
-	movie.ID = docs.Properties["id"].(int)
+	if docs == nil {
+		return nil, errors.New("movie not found")
+	}
+
+	idd := docs.Properties["id"].(string)
+
+	if strings.Contains(idd, ":") {
+		idd = strings.Split(idd, ":")[1]
+		movie.ID, _ = strconv.Atoi(idd)
+	} else {
+		movie.ID, _ = strconv.Atoi(idd)
+	}
 	movie.Name = docs.Properties["name"].(string)
 	movie.ReleaseDate, _ = time.Parse(time.RFC3339, docs.Properties["release_date"].(string))
 	movie.Director = docs.Properties["director"].(string)
@@ -276,28 +242,52 @@ func (r RedisCache) GetMovieByID(id int) (*model.MovieDetails, error) {
 	return &movie, nil
 }
 
-func (r RedisCache) GetCharactersByMovieID(movieID int, page, pageSize int) ([]model.Character, int64, error) {
+func (r RedisCache) GetCharactersByMovieID(movieID int, page, pageSize int, filter ports.GetCharacterFiler) ([]model.Character, int64, error) {
+
+	asc := filter.SortOrder == "asc"
 
 	query := redisearch.NewQuery("*").
-		Limit((page-1)*pageSize, pageSize).
-		SetSortBy("name", false)
+		Limit((page-1)*pageSize, pageSize)
+
+	if filter.SortKey != "" {
+		query = query.SetSortBy(filter.SortKey, asc)
+	}
+
+	if filter.Gender != "" {
+		query = query.AddFilter(redisearch.Filter{
+			Field:   "gender",
+			Options: redisearch.NewAggregateQuery(),
+		})
+	}
 
 	docs, count, err := r.characterIndex.Search(query)
+
 	if err != nil {
 		return nil, 0, err
 	}
 
 	var characters []model.Character
 	var character model.Character
+	var id string
+
+	var height int
 
 	for _, doc := range docs {
 
+		height, _ = strconv.Atoi(doc.Properties["height_cm"].(string))
 		character = model.Character{
-			ID:       doc.Properties["id"].(int),
 			Name:     doc.Properties["name"].(string),
-			MovieID:  doc.Properties["movie_id"].(int),
+			MovieID:  movieID,
 			Gender:   doc.Properties["gender"].(string),
-			HeightCm: doc.Properties["height_cm"].(int),
+			HeightCm: height,
+		}
+
+		id = doc.Properties["id"].(string)
+		if strings.Contains(id, ":") {
+			id = strings.Split(id, ":")[1]
+			character.ID, _ = strconv.Atoi(id)
+		} else {
+			character.ID, _ = strconv.Atoi(id)
 		}
 
 		characters = append(characters, character)

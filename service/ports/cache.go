@@ -2,6 +2,12 @@ package ports
 
 import "github.com/iamnator/movie-api/model"
 
+type GetCharacterFiler struct {
+	SortKey   string
+	SortOrder string
+	Gender    string
+}
+
 //go:generate mockgen -destination=../mocks/cache.go -package=mocks github.com/iamnator/movie-api/adapter/cache ICache
 type ICache interface {
 	SetMovies([]model.MovieDetails) error
@@ -10,5 +16,5 @@ type ICache interface {
 
 	GetMovies(page, pageSize int) ([]model.MovieDetails, int64, error)
 	GetMovieByID(id int) (*model.MovieDetails, error)
-	GetCharactersByMovieID(id int, page, pageSize int) ([]model.Character, int64, error)
+	GetCharactersByMovieID(id int, page, pageSize int, filter GetCharacterFiler) ([]model.Character, int64, error)
 }

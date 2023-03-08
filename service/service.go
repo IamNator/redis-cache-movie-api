@@ -84,6 +84,7 @@ func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 			Name:         movie.Name,
 			OpeningCrawl: movie.OpeningCrawl,
 			CommentCount: commentCount,
+			ReleaseDate:  movie.ReleaseDate,
 		})
 	}
 
@@ -98,7 +99,11 @@ func (s service) GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) (*
 		return nil, 0, errors.New("movie not found")
 	}
 
-	characters, count, err := s.cache.GetCharactersByMovieID(movie.ID, arg.Page, arg.PageSize)
+	characters, count, err := s.cache.GetCharactersByMovieID(movie.ID, arg.Page, arg.PageSize, ports.GetCharacterFiler{
+		SortKey:   arg.SortKey,
+		SortOrder: arg.SortOrder,
+		Gender:    arg.Gender,
+	})
 	if err != nil {
 		log.Error().Err(err).Msg("error getting characters")
 		return nil, 0, errors.New("error getting characters")
