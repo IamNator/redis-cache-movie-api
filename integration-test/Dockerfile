@@ -1,4 +1,3 @@
-# Step 1: Modules caching
 FROM golang:latest
 
 

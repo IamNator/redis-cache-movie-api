@@ -72,6 +72,7 @@ func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
 	if err == nil {
 		err = errors.New(msg)
 	}
+	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(model.GenericResponse{
 		Error:   err.Error(),
 		Data:    nil,
@@ -81,9 +82,10 @@ func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
 }
 
 func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(model.GenericResponse{
 		Error:   "",
-		Code:    code,
+		Code:    code, //
 		Message: msg,
 		Data:    data,
 		Count:   count,
