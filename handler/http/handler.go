@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/iamnator/movie-api/service"
 	"github.com/rs/zerolog/log"
@@ -60,9 +61,12 @@ func Run(port string, r *mux.Router, srv service.IServices) error {
 
 }
 
-func respondWithError(w http.ResponseWriter, code int, msg string, err ...interface{}) {
+func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
+	if err == nil {
+		err = errors.New(msg)
+	}
 	_ = json.NewEncoder(w).Encode(model.GenericResponse{
-		Error:   err,
+		Error:   err.Error(),
 		Data:    nil,
 		Code:    code,
 		Message: msg,
@@ -71,7 +75,7 @@ func respondWithError(w http.ResponseWriter, code int, msg string, err ...interf
 
 func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64, data interface{}) {
 	_ = json.NewEncoder(w).Encode(model.GenericResponse{
-		Error:   nil,
+		Error:   "",
 		Code:    code,
 		Message: msg,
 		Data:    data,
@@ -145,8 +149,39 @@ func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	sortKey := r.URL.Query().Get("sortKey")
+
+	if sortKey != "" {
+		switch sortKey {
+		case "name", "height":
+
+		default:
+			respondWithError(w, http.StatusBadRequest, "Invalid sort key e.g ['name']", err)
+			return
+		}
+	}
+
 	sortOrder := r.URL.Query().Get("sortOrder")
+	if sortOrder != "" {
+		switch sortOrder {
+		case "asc", "desc":
+
+		default:
+			respondWithError(w, http.StatusBadRequest, "Invalid sort order e.g ['asc', 'desc']", nil)
+			return
+		}
+	}
+
 	gender := r.URL.Query().Get("gender")
+	if gender != "" {
+		switch gender {
+		case "male", "female": //yeah, I know, but it's just a demo
+
+		default:
+			respondWithError(w, http.StatusBadRequest, "Invalid gender e.g ['female', 'male']", nil)
+			return
+
+		}
+	}
 
 	var arg = model.GetCharactersByMovieIDArgs{
 		MovieID:   movieID,

@@ -19,7 +19,8 @@ func createMovieSchema(ctx context.Context, client *redis.Client) error {
 		"producer", "TEXT",
 		"release_date", "TEXT", "WEIGHT", "5.0", "SORTABLE",
 		"created_at", "TEXT",
-		"updated_at", "TEXT").
+		"updated_at", "TEXT",
+	).
 		Err()
 
 	if err != nil {
@@ -36,10 +37,11 @@ func createCharacterSchema(ctx context.Context, client *redis.Client) error {
 
 	err := client.Do(ctx, "FT.CREATE", "idx:characters", "ON", "HASH", "PREFIX", "1", "character:", "SCHEMA",
 		"id", "NUMERIC",
-		"name", "TEXT", "WEIGHT", "5.0",
-		"movie_id", "NUMERIC", "SORTABLE",
-		"gender", "TEXT", "WEIGHT", "5.0", "SORTABLE",
-		"height_cm", "NUMERIC").
+		"name", "TEXT", "WEIGHT", "5.0", "SORTABLE",
+		"movie_id", "TAG", "SORTABLE",
+		"gender", "TAG", "SORTABLE",
+		"height_cm", "NUMERIC", "SORTABLE",
+	).
 		Err()
 	if err != nil {
 		return err

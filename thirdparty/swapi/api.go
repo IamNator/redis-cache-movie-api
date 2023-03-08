@@ -135,7 +135,7 @@ func (s *Swapi) GetCharacters(ctx context.Context, ids ...int) ([]swapi.Person, 
 			ss += err.Error() + ", "
 		}
 
-		return nil, errors.New(ss)
+		return characters, errors.New(ss)
 	}
 
 	return characters, nil

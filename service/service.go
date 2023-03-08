@@ -104,9 +104,14 @@ func (s service) GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) (*
 		SortOrder: arg.SortOrder,
 		Gender:    arg.Gender,
 	})
+
 	if err != nil {
 		log.Error().Err(err).Msg("error getting characters")
 		return nil, 0, errors.New("error getting characters")
+	}
+
+	if len(characters) == 0 {
+		return nil, 0, errors.New("no characters found")
 	}
 
 	var characterList model.CharacterList

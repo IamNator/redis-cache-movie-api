@@ -244,27 +244,31 @@ func (r RedisCache) GetMovieByID(id int) (*model.MovieDetails, error) {
 
 func (r RedisCache) GetCharactersByMovieID(movieID int, page, pageSize int, filter ports.GetCharacterFiler) ([]model.Character, int64, error) {
 
-	asc := filter.SortOrder == "asc"
-
-	query := redisearch.NewQuery("*").
-		Limit((page-1)*pageSize, pageSize)
-
-	if filter.SortKey != "" {
-		query = query.SetSortBy(filter.SortKey, asc)
-	}
+	query := redisearch.NewQuery(`@movie_id:{` + strconv.Itoa(movieID) + `}`)
 
 	if filter.Gender != "" {
-		query = query.AddFilter(redisearch.Filter{
-			Field:   "gender",
-			Options: redisearch.NewAggregateQuery(),
-		})
+		query = redisearch.NewQuery(`@movie_id:{` + strconv.Itoa(movieID) + `} @gender:{` + filter.Gender + `}`)
 	}
 
-	docs, count, err := r.characterIndex.Search(query)
+	if filter.SortKey != "" {
+		if filter.SortKey == "height" {
+			filter.SortKey = "height_cm"
+		}
+		asc := filter.SortOrder == "asc"
+		query = query.SetSortBy(filter.SortKey, !asc) //  sort is descending by default
+	}
 
+	if page < 1 {
+		page = 1
+	}
+	query = query.Limit((page-1)*pageSize, pageSize)
+
+	docs, count, err := r.characterIndex.Search(query)
 	if err != nil {
 		return nil, 0, err
 	}
+
+	log.Info().Msgf("docs: %v", len(docs))
 
 	var characters []model.Character
 	var character model.Character
