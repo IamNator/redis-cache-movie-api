@@ -33,13 +33,6 @@ func (tag cacheTag) computeStringKey(id ...string) string {
 	return tag.String() + key
 }
 
-// computeParentKey returns the parent key for a given key
-// e.g. let parentTag = "movie"
-// then parentTag.computeParentKey(1) -> "movie:1"
-func (parentTag cacheTag) computeParentKey(id int) cacheTag {
-	return cacheTag(parentTag.computeIntKey(id))
-}
-
 // computeMovieKey returns the key for a movie
 // e.g. movie:1 -> movie:<movie_id>
 func computeMovieKey[k int | string](id k) string {
@@ -62,9 +55,9 @@ func computeCharacterKey[k int | string](movieID, characterID k) string {
 	valueOfCharacterID := reflect.ValueOf(characterID)
 
 	if typeOfMovieID.Kind() == reflect.Int {
-		return characterTag.computeIntKey(int(valueOfMovieID.Int()), int(valueOfCharacterID.Int()))
+		return movieTag.computeIntKey(int(valueOfMovieID.Int())) + ":" + characterTag.computeIntKey(int(valueOfCharacterID.Int()))
 	} else {
-		return characterTag.computeStringKey(valueOfMovieID.String(), valueOfCharacterID.String())
+		return movieTag.computeStringKey(valueOfMovieID.String()) + ":" + characterTag.computeStringKey(valueOfCharacterID.String())
 	}
 }
 

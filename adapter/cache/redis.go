@@ -126,8 +126,12 @@ func (r RedisCache) SetCharactersByMovieID(movieID int, characters []model.Chara
 		docs = append(docs, doc)
 	}
 
+	opts := redisearch.DefaultIndexingOptions
+	opts.Replace = true
+	opts.Partial = true
+
 	// Add the document to the index
-	if err := r.redisearchClient.IndexOptions(redisearch.DefaultIndexingOptions, docs...); err != nil {
+	if err := r.redisearchClient.IndexOptions(opts, docs...); err != nil {
 		return err
 	}
 
@@ -142,7 +146,7 @@ func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, 
 		page = 1
 	}
 
-	query := redisearch.NewQuery("*")
+	query := redisearch.NewQuery("release_date")
 
 	docs, count, err := r.redisearchClient.Search(query)
 	if err != nil {

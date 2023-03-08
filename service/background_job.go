@@ -61,22 +61,22 @@ func (s service) refreshMovieCache(ctx context.Context) error {
 
 		movies = append(movies, movie)
 
-		//for _, characterURL := range film.CharacterURLs {
-		//
-		//	characterID, err := getCharacterIDFromURL(characterURL)
-		//	if err != nil {
-		//		log.Error().Err(err).Msg("error getting character id")
-		//		return errors.New("error getting character id")
-		//	}
-		//
-		//	characterIDChan <- struct {
-		//		charID  int
-		//		movieID int
-		//	}{
-		//		charID:  characterID,
-		//		movieID: filmID,
-		//	}
-		//}
+		for _, characterURL := range film.CharacterURLs {
+
+			characterID, err := getCharacterIDFromURL(characterURL)
+			if err != nil {
+				log.Error().Err(err).Msg("error getting character id")
+				return errors.New("error getting character id")
+			}
+
+			characterIDChan <- struct {
+				charID  int
+				movieID int
+			}{
+				charID:  characterID,
+				movieID: filmID,
+			}
+		}
 	}
 
 	//save movies to cache
@@ -109,6 +109,12 @@ func (s service) refreshCharacterCache(chn chan struct {
 
 			if h, er := strconv.Atoi(character.Height); er == nil {
 				heightCm = h
+			}
+
+			characterID, err = getCharacterIDFromURL(character.URL)
+			if err != nil {
+				log.Error().Err(err).Msg("error getting character id")
+				continue
 			}
 
 			characterList = append(characterList, model.Character{
