@@ -3,9 +3,10 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/rs/zerolog/log"
+	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/iamnator/movie-api/model"
@@ -41,7 +42,7 @@ func (s service) refreshMovieCache(ctx context.Context) error {
 
 	for _, film := range films {
 
-		filmID, err = getFilmIDFromURL(film.URL)
+		filmID, err = GetFilmIDFromURL(film.URL)
 		if err != nil {
 			log.Error().Err(err).Msg("error getting film id")
 			return errors.New("error getting film id")
@@ -63,7 +64,7 @@ func (s service) refreshMovieCache(ctx context.Context) error {
 
 		for _, characterURL := range film.CharacterURLs {
 
-			characterID, err := getCharacterIDFromURL(characterURL)
+			characterID, err := GetCharacterIDFromURL(characterURL)
 			if err != nil {
 				log.Error().Err(err).Msg("error getting character id")
 				return errors.New("error getting character id")
@@ -167,7 +168,7 @@ func (s service) refreshCharacterCache(chn chan struct {
 			for movieID, charIDs := range movCharMap {
 
 				for _, charID := range charIDs {
-					id, _ := getCharacterIDFromURL(character.URL)
+					id, _ := GetCharacterIDFromURL(character.URL)
 					if charID == id {
 						if h, er := strconv.Atoi(character.Height); er == nil {
 							heightCm = h
@@ -207,18 +208,74 @@ func (s service) refreshCharacterCache(chn chan struct {
 
 }
 
-func getFilmIDFromURL(url string) (int, error) {
+func GetFilmIDFromURL(urL string) (int, error) {
+
+	// url format: https://swapi.dev/api/films/1/
 	var id int
-	if _, er := fmt.Sscanf(url, "https://swapi.dev/api/films/%d/", &id); er != nil {
+
+	parseURL, err := url.Parse(urL)
+	if err != nil {
+		return 0, err
+	}
+
+	path := parseURL.Path
+
+	log.Info().Msgf("path: %s", path)
+
+	parts := strings.TrimSuffix(path, "/")
+	split := strings.Split(parts, "/")
+	if len(split) < 2 {
 		return 0, errors.New("error getting id from url")
 	}
+
+	for i, v := range split {
+		if v == "films" {
+			if i+1 >= len(split) {
+				return 0, errors.New("error getting id from url")
+			}
+			id, err = strconv.Atoi(split[i+1])
+			if err != nil {
+				return 0, err
+			}
+			break
+		}
+	}
+
 	return id, nil
 }
 
-func getCharacterIDFromURL(url string) (int, error) {
+func GetCharacterIDFromURL(urL string) (int, error) {
+
+	// url format: https://swapi.dev/api/people/%d/
 	var id int
-	if _, er := fmt.Sscanf(url, "https://swapi.dev/api/people/%d/", &id); er != nil {
+
+	parseURL, err := url.Parse(urL)
+	if err != nil {
+		return 0, err
+	}
+
+	path := parseURL.Path
+
+	log.Info().Msgf("path: %s", path)
+
+	parts := strings.TrimSuffix(path, "/")
+	split := strings.Split(parts, "/")
+	if len(split) < 2 {
 		return 0, errors.New("error getting id from url")
 	}
+
+	for i, v := range split {
+		if v == "people" {
+			if i+1 >= len(split) {
+				return 0, errors.New("error getting id from url")
+			}
+			id, err = strconv.Atoi(split[i+1])
+			if err != nil {
+				return 0, err
+			}
+			break
+		}
+	}
+
 	return id, nil
 }

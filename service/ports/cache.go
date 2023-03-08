@@ -8,7 +8,7 @@ type GetCharacterFiler struct {
 	Gender    string
 }
 
-//go:generate mockgen -source=cache.go -destination=../mocks/cache.go  -package=mocks github.com/iamnator/movie-api/service/ports ICache
+//go:generate mockgen -source=cache.go -destination=./mocks/cache.go  -package=mocks github.com/iamnator/movie-api/service/ports ICache
 type ICache interface {
 	SetMovies([]model.MovieDetails) error
 	SetMovieByID(id int, movie model.MovieDetails) error

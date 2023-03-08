@@ -6,4 +6,6 @@ echo $GOPATH/bin/mockgen
 
 go mod tidy
 
+go mod download github.com/golang/mock
+
 go generate ./...

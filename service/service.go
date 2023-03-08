@@ -6,11 +6,10 @@ import (
 	"github.com/iamnator/movie-api/model"
 	"github.com/iamnator/movie-api/service/ports"
 	"github.com/rs/zerolog/log"
-	"sort"
 	"time"
 )
 
-//go:generate mockgen -destination=../mocks/service_mock.go -package=mocks github.com/iamnator/movie-api/service IServices
+//go:generate mockgen -destination=./mocks/service_mock.go -package=mocks github.com/iamnator/movie-api/service IServices
 type IServices interface {
 	GetMovies(page, pageSize int) ([]model.Movie, int64, error)
 	GetMovieByID(movieID int) (*model.Movie, error)
@@ -67,10 +66,6 @@ func (s service) GetMovies(page, pageSize int) ([]model.Movie, int64, error) {
 		log.Debug().Err(err).Msg("error getting movies from cache")
 		return nil, 0, errors.New("error getting movies from cache")
 	}
-
-	sort.Slice(movies, func(i, j int) bool {
-		return movies[i].ReleaseDate.Before(movies[j].ReleaseDate)
-	})
 
 	var movieList []model.Movie
 	for _, movie := range movies {
