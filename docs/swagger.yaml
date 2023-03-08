@@ -305,4 +305,44 @@ paths:
       summary: Get all movies
       tags:
       - Movies
+  /movies/{movie_id}:
+    get:
+      description: Get a movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Movie'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.GenericResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Get a movie
+      tags:
+      - Movies
 swagger: "2.0"

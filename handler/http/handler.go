@@ -52,6 +52,7 @@ func Run(port string, r *mux.Router, srv service.IServices) error {
 	r.Use(loggingMiddleware)
 
 	r.HandleFunc("/movies", handler.getMoviesHandler).Methods(http.MethodGet)
+	r.HandleFunc("/movies/{movie_id}", handler.getMovieHandler).Methods(http.MethodGet)
 	r.HandleFunc("/characters/{movie_id}", handler.getMovieCharacterHandler).Methods(http.MethodGet)
 
 	r.HandleFunc("/comments/{movie_id}", handler.addCommentHandler).Methods(http.MethodPost)
@@ -113,6 +114,32 @@ func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithSuccess(w, http.StatusOK, "Success", count, movieList)
+}
+
+// getMoviesHandler handles the request to get a movie
+//
+//	@Summary		Get a movie
+//	@Description	Get a movie
+//	@Tags			Movies
+//	@Param			movie_id	path		int	true	"Movie ID"
+//	@Success		200			{object}	model.GenericResponse{data=model.Movie}
+//	@Failure		400,502		{object}	model.GenericResponse{error=string}
+//	@Router			/movies/{movie_id} [get]
+func (h handlers) getMovieHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	movieID, err := strconv.Atoi(vars["movie_id"])
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid movie ID", err)
+		return
+	}
+
+	movie, err := h.service.GetMovieByID(movieID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error getting movie", err)
+		return //
+	}
+
+	respondWithSuccess(w, http.StatusOK, "Success", 1, movie)
 }
 
 // getMovieCharacterHandler handles the request to get all characters in a movie
