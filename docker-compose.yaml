@@ -52,7 +52,8 @@ services:
       context: .
       dockerfile: integration-test/Dockerfile
     container_name: integration
-    image: integration
+    environment:
+      - HOST_MACHINE=api:9500
     depends_on:
       - api
 
