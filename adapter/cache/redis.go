@@ -8,13 +8,12 @@ import (
 	"github.com/iamnator/movie-api/model"
 	"github.com/iamnator/movie-api/service/ports"
 	"github.com/rs/zerolog/log"
-	"strconv"
 	"time"
 )
 
 type RedisCache struct {
-	redisearchClient *redisearch.Client
-	//redisClient      *redis.Client
+	characterIndex *redisearch.Client
+	movieIndex     *redisearch.Client
 }
 
 func NewRedisCache(url string) (*RedisCache, error) {
@@ -34,18 +33,22 @@ func NewRedisCache(url string) (*RedisCache, error) {
 		return goredis.Dial(opts.Network, opts.Addr, goredis.DialPassword(opts.Password))
 	}}
 
-	// Create a RedisSearch redis-searchClient
-	client := redisearch.NewClientFromPool(pool, "busha_movie_api")
-
-	if err := createMovieSchema(client); err != nil {
+	if err := createMovieSchema(context.Background(), redisClient); err != nil {
 		return nil, err
 	}
 
-	if err := createCharacterSchema(client); err != nil {
+	if err := createCharacterSchema(context.Background(), redisClient); err != nil {
 		return nil, err
 	}
 
-	return &RedisCache{redisearchClient: client}, nil
+	return &RedisCache{
+		characterIndex: getRedisSearchClient(pool, "idx:characters"),
+		movieIndex:     getRedisSearchClient(pool, "idx:movies"),
+	}, nil
+}
+
+func getRedisSearchClient(pool *goredis.Pool, index string) *redisearch.Client {
+	return redisearch.NewClientFromPool(pool, index)
 }
 
 var _ ports.ICache = (*RedisCache)(nil)
@@ -73,7 +76,7 @@ func (r RedisCache) SetMovies(movies []model.MovieDetails) error {
 	}
 
 	// Add the document to the index
-	if err := r.redisearchClient.IndexOptions(redisearch.IndexingOptions{
+	if err := r.movieIndex.IndexOptions(redisearch.IndexingOptions{
 		Language:         redisearch.DefaultIndexingOptions.Language,
 		NoSave:           redisearch.DefaultIndexingOptions.NoSave,
 		Replace:          true,
@@ -102,7 +105,7 @@ func (r RedisCache) SetMovieByID(movieID int, movie model.MovieDetails) error {
 		Set("updated_at", movie.UpdatedAt.UTC().Format(time.RFC3339))
 
 	// Add the document to the index
-	if err := r.redisearchClient.IndexOptions(redisearch.DefaultIndexingOptions, doc); err != nil {
+	if err := r.movieIndex.IndexOptions(redisearch.DefaultIndexingOptions, doc); err != nil {
 		return err
 	}
 
@@ -116,7 +119,7 @@ func (r RedisCache) SetCharactersByMovieID(movieID int, characters []model.Chara
 	var doc redisearch.Document
 
 	for _, character := range characters {
-		doc = redisearch.NewDocument(computeCharacterKey(character.MovieID, character.ID), 1.0).
+		doc = redisearch.NewDocument(computeCharacterKey(character.ID), 1.0).
 			Set("id", character.ID).
 			Set("name", character.Name).
 			Set("movie_id", character.MovieID).
@@ -130,8 +133,8 @@ func (r RedisCache) SetCharactersByMovieID(movieID int, characters []model.Chara
 	opts.Replace = true
 	opts.Partial = true
 
-	// Add the document to the index
-	if err := r.redisearchClient.IndexOptions(opts, docs...); err != nil {
+	//Add the document to the index
+	if err := r.characterIndex.IndexOptions(opts, docs...); err != nil {
 		return err
 	}
 
@@ -148,7 +151,7 @@ func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, 
 
 	query := redisearch.NewQuery("release_date")
 
-	docs, count, err := r.redisearchClient.Search(query)
+	docs, count, err := r.movieIndex.Search(query)
 	if err != nil {
 		return movies, 0, err
 	}
@@ -175,7 +178,7 @@ func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, 
 func (r RedisCache) GetMovieByID(id int) (*model.MovieDetails, error) {
 	var movie model.MovieDetails
 
-	docs, err := r.redisearchClient.Get(computeMovieKey(id))
+	docs, err := r.movieIndex.Get(computeMovieKey(id))
 	if err != nil {
 		return nil, err
 	}
@@ -194,11 +197,11 @@ func (r RedisCache) GetMovieByID(id int) (*model.MovieDetails, error) {
 
 func (r RedisCache) GetCharactersByMovieID(movieID int, page, pageSize int) ([]model.Character, int64, error) {
 
-	query := redisearch.NewQuery(computeCharacterKey(strconv.Itoa(movieID), "*")).
+	query := redisearch.NewQuery("*").
 		Limit((page-1)*pageSize, pageSize).
 		SetSortBy("name", false)
 
-	docs, count, err := r.redisearchClient.Search(query)
+	docs, count, err := r.characterIndex.Search(query)
 	if err != nil {
 		return nil, 0, err
 	}

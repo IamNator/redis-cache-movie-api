@@ -47,17 +47,15 @@ func computeMovieKey[k int | string](id k) string {
 
 // computeCharacterKey returns the key for a character
 // e.g. movie:1:character:2 -> movie:<movie_id>:character:<character_id>
-func computeCharacterKey[k int | string](movieID, characterID k) string {
+func computeCharacterKey[k int | string](characterID k) string {
 
-	typeOfMovieID := reflect.TypeOf(movieID)
-
-	valueOfMovieID := reflect.ValueOf(movieID)
+	typeOfCharacterID := reflect.TypeOf(characterID)
 	valueOfCharacterID := reflect.ValueOf(characterID)
 
-	if typeOfMovieID.Kind() == reflect.Int {
-		return movieTag.computeIntKey(int(valueOfMovieID.Int())) + ":" + characterTag.computeIntKey(int(valueOfCharacterID.Int()))
+	if typeOfCharacterID.Kind() == reflect.Int {
+		return characterTag.computeIntKey(int(valueOfCharacterID.Int()))
 	} else {
-		return movieTag.computeStringKey(valueOfMovieID.String()) + ":" + characterTag.computeStringKey(valueOfCharacterID.String())
+		return characterTag.computeStringKey(valueOfCharacterID.String())
 	}
 }
 

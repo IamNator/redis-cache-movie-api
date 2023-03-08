@@ -1,32 +1,27 @@
 package cache
 
 import (
-	"github.com/RediSearch/redisearch-go/redisearch"
-	"github.com/rs/zerolog/log"
+	"context"
+	"github.com/go-redis/redis/v8"
 )
 
-func createMovieSchema(client *redisearch.Client) error {
+func createMovieSchema(ctx context.Context, client *redis.Client) error {
 
-	schema := redisearch.NewSchema(redisearch.DefaultOptions).
-		AddField(redisearch.NewTextField("name")).
-		AddField(redisearch.NewNumericField("id")).
-		AddField(redisearch.NewNumericField("episode_id")).
-		AddField(redisearch.NewTextField("opening_crawl")).
-		AddField(redisearch.NewTextField("director")).
-		AddField(redisearch.NewTextField("producer")).
-		AddField(redisearch.NewTextFieldOptions("release_date", redisearch.TextFieldOptions{Sortable: true})).
-		AddField(redisearch.NewTextField("created_at")).
-		AddField(redisearch.NewTextField("updated_at"))
+	//drop the index if it exists
+	_ = client.Do(ctx, "FT.DROPINDEX", "idx:movies", "DD").Err()
 
-	// Create a RedisSearch index definition
-	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("movie:")
+	err := client.Do(ctx, "FT.CREATE", "idx:movies", "ON", "HASH", "PREFIX", "1", "movie:", "SCHEMA",
+		"name", "TEXT",
+		"id", "NUMERIC",
+		"episode_id", "NUMERIC",
+		"opening_crawl", "TEXT",
+		"director", "TEXT",
+		"producer", "TEXT",
+		"release_date", "TEXT", "WEIGHT", "5.0", "SORTABLE",
+		"created_at", "TEXT",
+		"updated_at", "TEXT").
+		Err()
 
-	if er := client.Drop(); er != nil {
-		log.Info().Msgf("Error dropping index: %v", er)
-	}
-
-	// Create the RedisSearch index
-	err := client.CreateIndexWithIndexDefinition(schema, indexDefinition)
 	if err != nil {
 		return err
 	}
@@ -34,22 +29,18 @@ func createMovieSchema(client *redisearch.Client) error {
 	return nil
 }
 
-func createCharacterSchema(client *redisearch.Client) error {
+func createCharacterSchema(ctx context.Context, client *redis.Client) error {
 
-	schema := redisearch.NewSchema(redisearch.DefaultOptions).
-		AddField(redisearch.NewNumericField("id")).
-		AddField(redisearch.NewTextFieldOptions("name", redisearch.TextFieldOptions{Weight: 5.0})).
-		AddField(redisearch.NewNumericFieldOptions("movie_id", redisearch.NumericFieldOptions{Sortable: true})).
-		AddField(redisearch.NewSortableTextField("gender", 5)).
-		AddField(redisearch.NewNumericField("height_cm"))
+	//drop the index if it exists
+	_ = client.Do(ctx, "FT.DROPINDEX", "idx:characters", "DD").Err()
 
-	// Create a RedisSearch index definition
-	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("character:")
-
-	client.Drop()
-
-	// Create the RedisSearch index
-	err := client.CreateIndexWithIndexDefinition(schema, indexDefinition)
+	err := client.Do(ctx, "FT.CREATE", "idx:characters", "ON", "HASH", "PREFIX", "1", "character:", "SCHEMA",
+		"id", "NUMERIC",
+		"name", "TEXT", "WEIGHT", "5.0",
+		"movie_id", "NUMERIC", "SORTABLE",
+		"gender", "TEXT", "WEIGHT", "5", "SORTABLE",
+		"height_cm", "NUMERIC").
+		Err()
 	if err != nil {
 		return err
 	}
