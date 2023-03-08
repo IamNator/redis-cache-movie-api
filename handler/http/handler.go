@@ -51,6 +51,12 @@ func Run(port string, r *mux.Router, srv service.IServices) error {
 
 	r.Use(loggingMiddleware)
 
+	//add health check endpoint
+	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	})
+
 	r.HandleFunc("/movies", handler.getMoviesHandler).Methods(http.MethodGet)
 	r.HandleFunc("/movies/{movie_id}", handler.getMovieHandler).Methods(http.MethodGet)
 	r.HandleFunc("/characters/{movie_id}", handler.getMovieCharacterHandler).Methods(http.MethodGet)

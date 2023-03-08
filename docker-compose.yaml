@@ -47,5 +47,14 @@ services:
     networks:
       - default
 
+  integration:
+    build:
+      context: .
+      dockerfile: integration-test/Dockerfile
+    container_name: integration
+    image: integration
+    depends_on:
+      - api
+
 networks:
   default:
