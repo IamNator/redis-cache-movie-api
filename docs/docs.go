@@ -165,6 +165,12 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        " count": {
+                                            "type": "integer"
+                                        },
+                                        " message": {
+                                            "type": "string"
+                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
@@ -237,7 +243,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Comment"
+                            "$ref": "#/definitions/model.AddCommentRequest"
                         }
                     }
                 ],
@@ -252,8 +258,8 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Comment"
+                                        "message": {
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -395,6 +401,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.AddCommentRequest": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "model.CharacterList": {
             "type": "object",
             "properties": {
@@ -441,13 +455,7 @@ const docTemplate = `{
         "model.Comment": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string"
-                },
                 "id": {
-                    "type": "string"
-                },
-                "ipv4_addr": {
                     "type": "string"
                 },
                 "message": {
@@ -502,6 +510,10 @@ const docTemplate = `{
                 "opening_crawl": {
                     "type": "string",
                     "example": "It is a period of civil war. Rebel spaceships, striking from a hidden base, have won their first victory against the evil Galactic Empire."
+                },
+                "release_date": {
+                    "type": "string",
+                    "example": "1977-05-25"
                 }
             }
         }

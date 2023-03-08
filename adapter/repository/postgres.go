@@ -67,7 +67,7 @@ func (p PgxCommentRepository) GetCommentsByMovieID(movieID int, page, pageSize i
 		page = 1
 	}
 	return comments, count, p.db.Model(&model.Comment{}).
-		Where("movie_id = ?", movieID).
+		Where("swapi_movie_id = ?", movieID).
 		Count(&count).
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).

@@ -268,7 +268,7 @@ func (r RedisCache) GetCharactersByMovieID(movieID int, page, pageSize int, filt
 		return nil, 0, err
 	}
 
-	log.Info().Msgf("docs: %v", len(docs))
+	//log.Info().Msgf("docs: %v", len(docs))
 
 	var characters []model.Character
 	var character model.Character

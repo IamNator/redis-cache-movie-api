@@ -209,12 +209,12 @@ func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Reques
 //	@Param			movie_id	path		int	true	"Movie ID"
 //	@Param			page		query		int	false	"Page number"
 //	@Param			pageSize	query		int	false	"Page size"
-//	@Success		200			{object}	model.GenericResponse{data=[]model.Comment}
+//	@Success		200			{object}	model.GenericResponse{data=[]model.Comment, count=int64, message=string}
 //	@Failure		400,502		{object}	model.GenericResponse{error=string}
 //	@Router			/comments/{movie_id} [get]
 func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	movieID, err := strconv.Atoi(vars["movie"])
+	movieID, err := strconv.Atoi(vars["movie_id"])
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid movie id", err)
 		return
@@ -246,24 +246,26 @@ func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
 //	@Description	Add a comment to a movie
 //	@Tags			Comments
 //	@Accept			json
-//	@Param			movie_id	path		int				true	"Movie ID"
-//	@Param			comment		body		model.Comment	true	"Comment"
-//	@Success		201			{object}	model.GenericResponse{data=model.Comment}
+//	@Param			movie_id	path		int						true	"Movie ID"
+//	@Param			comment		body		model.AddCommentRequest	true	"Comment"
+//	@Success		201			{object}	model.GenericResponse{message=string}
 //	@Failure		400,502		{object}	model.GenericResponse{error=string}
 //	@Router			/comments/{movie_id} [post]
 func (h handlers) addCommentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	movieID, err := strconv.Atoi(vars["movie"])
+	movieID, err := strconv.Atoi(vars["movie_id"])
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid movie id", err)
 		return
 	}
 
-	var comment model.Comment
-	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
+	var req model.AddCommentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload", err)
 		return
 	}
+
+	comment := req.ToComment()
 
 	comment.SwapiMovieID = movieID
 	comment.IPv4Addr = r.RemoteAddr

@@ -172,7 +172,7 @@ func (s service) GetComment(movieID int, page, pageSize int) ([]model.Comment, i
 	comments, count, err := s.commentRepository.GetCommentsByMovieID(movie.ID, page, pageSize)
 	if err != nil {
 		log.Error().Err(err).Msg("error getting comments")
-		return nil, 0, errors.New("error getting comments")
+		return nil, 0, err
 	}
 
 	return comments, count, nil

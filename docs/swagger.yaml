@@ -1,5 +1,10 @@
 basePath: /
 definitions:
+  model.AddCommentRequest:
+    properties:
+      message:
+        type: string
+    type: object
   model.CharacterList:
     properties:
       characters:
@@ -30,11 +35,7 @@ definitions:
     type: object
   model.Comment:
     properties:
-      created_at:
-        type: string
       id:
-        type: string
-      ipv4_addr:
         type: string
       message:
         type: string
@@ -73,6 +74,9 @@ definitions:
       opening_crawl:
         example: It is a period of civil war. Rebel spaceships, striking from a hidden
           base, have won their first victory against the evil Galactic Empire.
+        type: string
+      release_date:
+        example: "1977-05-25"
         type: string
     type: object
 host: localhost:9500
@@ -171,6 +175,10 @@ paths:
             allOf:
             - $ref: '#/definitions/model.GenericResponse'
             - properties:
+                ' count':
+                  type: integer
+                ' message':
+                  type: string
                 data:
                   items:
                     $ref: '#/definitions/model.Comment'
@@ -212,7 +220,7 @@ paths:
         name: comment
         required: true
         schema:
-          $ref: '#/definitions/model.Comment'
+          $ref: '#/definitions/model.AddCommentRequest'
       responses:
         "201":
           description: Created
@@ -220,8 +228,8 @@ paths:
             allOf:
             - $ref: '#/definitions/model.GenericResponse'
             - properties:
-                data:
-                  $ref: '#/definitions/model.Comment'
+                message:
+                  type: string
               type: object
         "400":
           description: Bad Request
