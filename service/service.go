@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+//go:generate mockgen -destination=../mocks/service_mock.go -package=mocks github.com/iamnator/movie-api/service IServices
 type IServices interface {
 	GetMovies(page, pageSize int) ([]model.Movie, int64, error)
 	GetMovieByID(movieID int) (*model.Movie, error)

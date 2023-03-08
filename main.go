@@ -1,21 +1,20 @@
 package main
 
 import (
-	"github.com/go-resty/resty/v2"
-	"github.com/iamnator/movie-api/docs"
-	"github.com/iamnator/movie-api/service"
-	"github.com/iamnator/movie-api/thirdparty/swapi"
 	"log"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 
 	"github.com/iamnator/movie-api/adapter/cache"
 	"github.com/iamnator/movie-api/adapter/repository"
+	"github.com/iamnator/movie-api/docs"
 	"github.com/iamnator/movie-api/env"
 	"github.com/iamnator/movie-api/handler/http"
-	//_ "github.com/iamnator/movie-api/terminal"
+	"github.com/iamnator/movie-api/service"
+	"github.com/iamnator/movie-api/thirdparty/swapi"
 )
 
 //	@title			Busha Movie API documentation
@@ -28,8 +27,8 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@host		localhost:9500
-//	@BasePath	/
+// @host		localhost:9500
+// @BasePath	/
 func main() {
 
 	if er := env.Init(); er != nil {

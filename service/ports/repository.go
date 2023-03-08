@@ -5,7 +5,7 @@ import (
 	"github.com/iamnator/movie-api/model"
 )
 
-//go:generate mockgen -destination=../mocks/repository.go -package=mocks github.com/iamnator/movie-api/adapter/repository ICommentRepository
+//go:generate mockgen -source=repository.go -destination=../mocks/repository.go  -package=mocks github.com/iamnator/movie-api/service/ports ICommentRepository
 type ICommentRepository interface {
 	AddComment(comment model.Comment) error
 	GetComment(commentID uuid.UUID) (*model.Comment, error)
