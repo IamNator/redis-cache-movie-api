@@ -5,6 +5,7 @@ import (
 	"github.com/iamnator/movie-api/service/ports"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/iamnator/movie-api/model"
 )
@@ -38,7 +39,16 @@ func NewPgxCommentRepository(url string) (*PgxCommentRepository, error) {
 }
 
 func (p PgxCommentRepository) AddComment(comment model.Comment) error {
-	return p.db.Model(&model.Comment{}).Create(&comment).Error
+
+	//on constraint violation, return updated comment
+
+	return p.db.Model(&model.Comment{}).
+		Clauses(
+			clause.OnConflict{
+				Columns:   []clause.Column{{Name: "ipv4_addr"}, {Name: "swapi_movie_id"}, {Name: "message"}},
+				DoUpdates: clause.Assignments(map[string]interface{}{"updated_at": gorm.Expr("NOW()")}),
+			}).
+		Create(&comment).Error
 }
 
 func (p PgxCommentRepository) GetComment(commentID uuid.UUID) (comment *model.Comment, err error) {

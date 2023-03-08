@@ -265,6 +265,11 @@ func (h handlers) addCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := req.Validate(); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload", err)
+		return
+	}
+
 	comment := req.ToComment()
 
 	comment.SwapiMovieID = movieID

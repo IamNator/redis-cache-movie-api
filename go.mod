@@ -15,6 +15,7 @@ require (
 
 require (
 	github.com/RediSearch/redisearch-go v1.1.1
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/gomodule/redigo v1.8.3
 	github.com/rs/zerolog v1.29.0

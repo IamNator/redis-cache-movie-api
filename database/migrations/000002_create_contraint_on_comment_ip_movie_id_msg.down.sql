@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS comment_swapi_movie_id_message_ipv4_addr_uindex;

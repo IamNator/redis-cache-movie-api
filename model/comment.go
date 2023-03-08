@@ -1,8 +1,10 @@
 package model
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/google/uuid"
 
 	"gorm.io/gorm"
 )
@@ -15,6 +17,11 @@ type AddCommentRequest struct {
 	CreatedAt time.Time      `json:"created_at" swaggerignore:"true"`
 	UpdatedAt *time.Time     `json:"updated_at" swaggerignore:"true"  gorm:"column:updated_at"`
 	DeletedAt gorm.DeletedAt ` gorm:"column:deleted_at" swaggerignore:"true" json:"-"`
+}
+
+func (a AddCommentRequest) Validate() error {
+	return validation.ValidateStruct(&a,
+		validation.Field(&a.Message, validation.Required, validation.Length(3, 500)))
 }
 
 func (a AddCommentRequest) ToComment() Comment {
