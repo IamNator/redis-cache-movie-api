@@ -5,12 +5,17 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+const (
+	MovieIndexName     = "idx:movies"
+	CharacterIndexName = "idx:characters"
+)
+
 func createMovieSchema(ctx context.Context, client *redis.Client) error {
 
 	//drop the index if it exists
-	_ = client.Do(ctx, "FT.DROPINDEX", "idx:movies", "DD").Err()
+	_ = client.Do(ctx, "FT.DROPINDEX", MovieIndexName, "DD").Err()
 
-	err := client.Do(ctx, "FT.CREATE", "idx:movies", "ON", "HASH", "PREFIX", "1", "movie:", "SCHEMA",
+	err := client.Do(ctx, "FT.CREATE", MovieIndexName, "ON", "HASH", "PREFIX", "1", "movie:", "SCHEMA",
 		"name", "TEXT",
 		"id", "NUMERIC",
 		"episode_id", "NUMERIC",
@@ -33,9 +38,9 @@ func createMovieSchema(ctx context.Context, client *redis.Client) error {
 func createCharacterSchema(ctx context.Context, client *redis.Client) error {
 
 	//drop the index if it exists
-	_ = client.Do(ctx, "FT.DROPINDEX", "idx:characters", "DD").Err()
+	_ = client.Do(ctx, "FT.DROPINDEX", CharacterIndexName, "DD").Err()
 
-	err := client.Do(ctx, "FT.CREATE", "idx:characters", "ON", "HASH", "PREFIX", "1", "character:", "SCHEMA",
+	err := client.Do(ctx, "FT.CREATE", CharacterIndexName, "ON", "HASH", "PREFIX", "1", "character:", "SCHEMA",
 		"id", "NUMERIC",
 		"name", "TEXT", "WEIGHT", "5.0", "SORTABLE",
 		"movie_id", "TAG", "SORTABLE",

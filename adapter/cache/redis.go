@@ -56,8 +56,8 @@ func NewRedisCache(url string) (*RedisCache, error) {
 	}
 
 	return &RedisCache{
-		characterIndex: getRedisSearchClient(pool, "idx:characters"),
-		movieIndex:     getRedisSearchClient(pool, "idx:movies"),
+		characterIndex: getRedisSearchClient(pool, CharacterIndexName),
+		movieIndex:     getRedisSearchClient(pool, MovieIndexName),
 		rueidisClient:  clientNN,
 	}, nil
 }
