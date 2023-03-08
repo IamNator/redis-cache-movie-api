@@ -16,7 +16,9 @@ require (
 require (
 	github.com/RediSearch/redisearch-go v1.1.1
 	github.com/go-resty/resty/v2 v2.7.0
+	github.com/gomodule/redigo v1.8.3
 	github.com/rs/zerolog v1.29.0
+	github.com/rueian/rueidis v0.0.94
 	github.com/swaggo/swag v1.8.10
 )
 
@@ -37,8 +39,6 @@ require (
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-openapi/validate v0.21.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/gomodule/redigo v1.8.3 // indirect
-	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.3.0 // indirect
@@ -52,9 +52,9 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	go.mongodb.org/mongo-driver v1.8.3 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
-	golang.org/x/net v0.6.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
-	golang.org/x/tools v0.1.12 // indirect
+	golang.org/x/tools v0.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

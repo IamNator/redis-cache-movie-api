@@ -2,18 +2,24 @@ package cache
 
 import (
 	"context"
+	"github.com/rs/zerolog/log"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/go-redis/redis/v8"
+	"github.com/rueian/rueidis"
+
 	goredis "github.com/gomodule/redigo/redis"
 	"github.com/iamnator/movie-api/model"
 	"github.com/iamnator/movie-api/service/ports"
-	"github.com/rs/zerolog/log"
-	"time"
 )
 
 type RedisCache struct {
 	characterIndex *redisearch.Client
 	movieIndex     *redisearch.Client
+	rueidisClient  rueidis.Client
 }
 
 func NewRedisCache(url string) (*RedisCache, error) {
@@ -41,9 +47,17 @@ func NewRedisCache(url string) (*RedisCache, error) {
 		return nil, err
 	}
 
+	clientNN, err := rueidis.NewClient(rueidis.ClientOption{
+		InitAddress: []string{opts.Addr},
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &RedisCache{
 		characterIndex: getRedisSearchClient(pool, "idx:characters"),
 		movieIndex:     getRedisSearchClient(pool, "idx:movies"),
+		rueidisClient:  clientNN,
 	}, nil
 }
 
@@ -141,24 +155,91 @@ func (r RedisCache) SetCharactersByMovieID(movieID int, characters []model.Chara
 	return nil
 }
 
-func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, error) {
+///
+//
+//   					GETTERS
+//
+//
 
-	var movies []model.MovieDetails
+func parse_movie_data(text string) []map[string]interface{} {
+
+	// Regular expression to match each movie record
+	pattern := regexp.MustCompile(`\[(\d+)\s+movie:(\d+)\s+\[(.*?)\]\s*\]`)
+	movies := []map[string]interface{}{}
+
+	// Loop through all matches of the pattern in the text
+	for _, match := range pattern.FindAllStringSubmatch(text, -1) {
+
+		//movie_id := parseInt(match[2])
+		// Split the movie record into key-value pairs
+		pairs_str := strings.Split(match[3], ",")
+		pairs := make([][]string, len(pairs_str))
+		for i, s := range pairs_str {
+			pairs[i] = strings.SplitN(strings.TrimSpace(s), " ", 2)
+		}
+		// Convert release date and created/updated timestamps to time.Time objects
+		for i := range pairs {
+			key, value := pairs[i][0], pairs[i][1]
+			if key == "release_date" || key == "created_at" || key == "updated_at" {
+				t, err := time.Parse("2006-01-02T15:04:05Z", value[:len(value)-1])
+				if err == nil {
+					pairs[i][1] = t.UTC().String()
+				}
+			}
+		}
+		// Create a map for the movie record
+		movie := map[string]interface{}{}
+		for _, pair := range pairs {
+			key, value := pair[0], pair[1]
+			//switch key {
+			//case "title", "overview", "poster_path", "homepage":
+			//	movie[key] = value
+			//case "release_date", "created_at", "updated_at":
+			//	movie[key] = value
+			//default:
+			// ignore unknown key
+			//}
+			movie[key] = value
+		}
+
+		// Add the movie map to the list of movies
+		movies = append(movies, movie)
+	}
+
+	return movies
+}
+
+//
+//func parseInt(s string) int {
+//	var n int
+//	_, err := fmt.Sscan(s, &n)
+//	if err != nil {
+//		return 0
+//	}
+//	return n
+//}
+
+func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, error) {
 
 	if page < 1 {
 		page = 1
 	}
 
-	query := redisearch.NewQuery("release_date")
+	qq := redisearch.NewQuery("*").
+		Limit((page-1)*pageSize, pageSize).
+		SetSortBy("release_date", false)
 
-	docs, count, err := r.movieIndex.Search(query)
+	docs, count, err := r.movieIndex.Search(qq)
 	if err != nil {
-		return movies, 0, err
+		return nil, 0, err
 	}
+
+	var movies []model.MovieDetails
 
 	for _, doc := range docs {
 		var movie model.MovieDetails
-		movie.ID = doc.Properties["id"].(int)
+
+		//movie.ID = doc.Properties["id"].(int)
 		movie.Name = doc.Properties["name"].(string)
 		movie.ReleaseDate, _ = time.Parse(time.RFC3339, doc.Properties["release_date"].(string))
 		movie.Director = doc.Properties["director"].(string)
@@ -170,7 +251,7 @@ func (r RedisCache) GetMovies(page, pageSize int) ([]model.MovieDetails, int64, 
 		movies = append(movies, movie)
 	}
 
-	log.Info().Msgf("Found %d movies", count)
+	log.Info().Msgf("movies: %v", len(movies))
 
 	return movies, int64(count), nil
 }

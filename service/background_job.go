@@ -95,42 +95,71 @@ func (s service) refreshCharacterCache(chn chan struct {
 	movieID int
 }) {
 
+	movCharMap := make(map[int][]int) // movieID, []characterID
 	for msg := range chn {
-		characters, err := s.swapiClient.GetCharacters(context.Background(), msg.charID)
-		if err != nil {
-			log.Error().Err(err).Msg("error getting character")
-			continue
-		}
-		var characterList []model.Character
-		var heightCm int
-		var characterID int
-
-		for _, character := range characters {
-
-			if h, er := strconv.Atoi(character.Height); er == nil {
-				heightCm = h
-			}
-
-			characterID, err = getCharacterIDFromURL(character.URL)
-			if err != nil {
-				log.Error().Err(err).Msg("error getting character id")
-				continue
-			}
-
-			characterList = append(characterList, model.Character{
-				ID:       characterID,
-				MovieID:  msg.movieID,
-				Name:     character.Name,
-				Gender:   character.Gender,
-				HeightCm: heightCm,
-			})
-		}
-
-		if err := s.cache.SetCharactersByMovieID(msg.movieID, characterList); err != nil {
-			log.Error().Err(err).Msg("error saving character")
-			continue
+		if _, ok := movCharMap[msg.movieID]; !ok {
+			movCharMap[msg.movieID] = []int{msg.charID}
+		} else {
+			movCharMap[msg.movieID] = append(movCharMap[msg.movieID], msg.charID)
 		}
 	}
+
+	var chxIDs []int
+	for _, v := range movCharMap {
+		chxIDs = append(chxIDs, v...)
+	}
+
+	characters, err := s.swapiClient.GetCharacters(context.Background(), chxIDs...)
+	if err != nil {
+		log.Error().Err(err).Msg("error getting character")
+		return
+	}
+
+	movieCharacterMap := make(map[int][]model.Character) // movieID, []character
+
+	for _, character := range characters {
+
+		var heightCm int
+		for movieID, charIDs := range movCharMap {
+
+			for _, charID := range charIDs {
+				id, _ := getCharacterIDFromURL(character.URL)
+				if charID == id {
+					if h, er := strconv.Atoi(character.Height); er == nil {
+						heightCm = h
+					}
+
+					if _, ok := movieCharacterMap[movieID]; !ok {
+
+						movieCharacterMap[movieID] = []model.Character{model.Character{
+							ID:       id,
+							MovieID:  movieID,
+							Name:     character.Name,
+							Gender:   character.Gender,
+							HeightCm: heightCm,
+						}}
+					} else {
+						movieCharacterMap[movieID] = append(movieCharacterMap[movieID], model.Character{
+							ID:       id,
+							MovieID:  movieID,
+							Name:     character.Name,
+							Gender:   character.Gender,
+							HeightCm: heightCm,
+						})
+					}
+				}
+			}
+		}
+	}
+
+	for msg, characterList := range movieCharacterMap {
+		if err := s.cache.SetCharactersByMovieID(msg, characterList); err != nil {
+			log.Error().Err(err).Msg("error saving character")
+			return
+		}
+	}
+
+	log.Info().Msgf("length of characters cached: %d", len(characters))
 }
 
 func getFilmIDFromURL(url string) (int, error) {

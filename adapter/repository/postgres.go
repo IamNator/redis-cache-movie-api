@@ -76,5 +76,5 @@ func (p PgxCommentRepository) GetCommentsByMovieID(movieID int, page, pageSize i
 }
 
 func (p PgxCommentRepository) GetCommentCountByMovieID(movieID int) (count int64, err error) {
-	return count, p.db.Model(&model.Comment{}).Where("movie_id = ?", movieID).Count(&count).Error
+	return count, p.db.Model(&model.Comment{}).Where("swapi_movie_id = ?", movieID).Count(&count).Error
 }
