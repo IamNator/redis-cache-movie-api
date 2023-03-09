@@ -220,8 +220,6 @@ func GetFilmIDFromURL(urL string) (int, error) {
 
 	path := parseURL.Path
 
-	log.Info().Msgf("path: %s", path)
-
 	parts := strings.TrimSuffix(path, "/")
 	split := strings.Split(parts, "/")
 	if len(split) < 2 {
@@ -255,8 +253,6 @@ func GetCharacterIDFromURL(urL string) (int, error) {
 	}
 
 	path := parseURL.Path
-
-	log.Info().Msgf("path: %s", path)
 
 	parts := strings.TrimSuffix(path, "/")
 	split := strings.Split(parts, "/")

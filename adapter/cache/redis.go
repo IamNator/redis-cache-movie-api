@@ -10,8 +10,6 @@ import (
 
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/go-redis/redis/v8"
-	"github.com/rueian/rueidis"
-
 	goredis "github.com/gomodule/redigo/redis"
 	"github.com/iamnator/movie-api/model"
 	"github.com/iamnator/movie-api/service/ports"
@@ -20,7 +18,6 @@ import (
 type RedisCache struct {
 	characterIndex *redisearch.Client
 	movieIndex     *redisearch.Client
-	rueidisClient  rueidis.Client
 }
 
 func NewRedisCache(url string) (*RedisCache, error) {
@@ -48,17 +45,9 @@ func NewRedisCache(url string) (*RedisCache, error) {
 		return nil, err
 	}
 
-	clientNN, err := rueidis.NewClient(rueidis.ClientOption{
-		InitAddress: []string{opts.Addr},
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	return &RedisCache{
 		characterIndex: getRedisSearchClient(pool, CharacterIndexName),
 		movieIndex:     getRedisSearchClient(pool, MovieIndexName),
-		rueidisClient:  clientNN,
 	}, nil
 }
 
