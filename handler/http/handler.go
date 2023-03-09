@@ -72,6 +72,7 @@ func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
 	if err == nil {
 		err = errors.New(msg)
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(model.GenericResponse{
 		Error:   err.Error(),
@@ -112,7 +113,7 @@ func (h handlers) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
 	if err != nil {
-		pageSize = 10
+		pageSize = 10 //
 	}
 
 	movieList, count, err := h.service.GetMovies(page, pageSize)
@@ -143,7 +144,7 @@ func (h handlers) getMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	movie, err := h.service.GetMovieByID(movieID)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error getting movie", err)
+		respondWithError(w, http.StatusNotFound, "Error getting movie", err)
 		return //
 	}
 
@@ -218,6 +219,11 @@ func (h handlers) getMovieCharacterHandler(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
+	if err := h.service.ValidateMovieID(movieID); err != nil {
+		respondWithError(w, http.StatusNotFound, "Invalid movie id", err)
+		return
+	}
+
 	var arg = model.GetCharactersByMovieIDArgs{
 		MovieID:   movieID,
 		Page:      page,
@@ -266,6 +272,11 @@ func (h handlers) getCommentHandler(w http.ResponseWriter, r *http.Request) {
 		pageSize = 10
 	}
 
+	if err := h.service.ValidateMovieID(movieID); err != nil {
+		respondWithError(w, http.StatusNotFound, "Invalid movie id", err)
+		return
+	}
+
 	comments, count, err := h.service.GetComment(movieID, page, pageSize)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error getting comments", err)
@@ -305,6 +316,11 @@ func (h handlers) addCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := h.service.ValidateMovieID(movieID); err != nil {
+		respondWithError(w, http.StatusNotFound, "Invalid movie id", err)
+		return
+	}
+
 	comment := req.ToComment()
 
 	comment.SwapiMovieID = movieID
@@ -316,6 +332,6 @@ func (h handlers) addCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithSuccess(w, 201, "Comment added successfully", 0, nil)
+	respondWithSuccess(w, http.StatusCreated, "Comment added successfully", 0, nil)
 
 }

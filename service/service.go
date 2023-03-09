@@ -13,6 +13,7 @@ import (
 type IServices interface {
 	GetMovies(page, pageSize int) ([]model.Movie, int64, error)
 	GetMovieByID(movieID int) (*model.Movie, error)
+	ValidateMovieID(movieID int) error
 	SaveComment(movieID int, comment model.Comment) error
 	GetComment(movieID int, page, pageSize int) ([]model.Comment, int64, error)
 	GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) (*model.CharacterList, int64, error)
@@ -155,6 +156,17 @@ func (s service) GetCharactersByMovieID(arg model.GetCharactersByMovieIDArgs) (*
 	characterList.TotalCount = int(count)
 
 	return &characterList, count, nil
+}
+
+func (s service) ValidateMovieID(movieID int) error {
+	//check if movie exists
+	_, err := s.cache.GetMovieByID(movieID)
+	if err != nil {
+		log.Debug().Err(err).Msg("movie not found")
+		return errors.New("movie not found")
+	}
+
+	return nil
 }
 
 func (s service) SaveComment(movieID int, comment model.Comment) error {
