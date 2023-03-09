@@ -5,6 +5,7 @@ BUSHA MOVIE API
 `` 
 <host>/docs
  ``
+ ---
 
 ### Getting Started (Development)
 
@@ -12,19 +13,24 @@ BUSHA MOVIE API
 ```bash 
  $ make install_tools
 ```
-2. Spin up docker-compose 
+2. Run Migrations [migration](./database/README.md)
+```
+ $ migrate -path database/migrations -database "postgres://postgres:password@localhost:5432/busha?sslmode=disable" up
+```
+3. Spin up docker-compose 
 ```bash 
  $ docker-compose up
 ```
-3. go to localhost:{PORT}/docs to view api docs
+4. Test if server is running
+```bash
+ $ curl localhost:9500/health
+```
+5. go to localhost:9500/docs to view api docs
 
-
-### Migration
-1. Go to [migration](./database/README.md) for more info
-
+---
 ### Useful Links   
 [swaggo](https://github.com/swaggo/swag#declarative-comments-format)
-
+---
 
 
 ### TODO
