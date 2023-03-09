@@ -13,10 +13,6 @@ const docTemplate = `{
             "name": "Nator Verinumbe",
             "email": "natorverinumbe@gmail.com"
         },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -535,7 +531,7 @@ const docTemplate = `{
                 "message": {
                     "type": "string"
                 },
-                "swapi_movie_id": {
+                "movie_id": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -597,8 +593,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0.0",
-	Host:             "localhost:9500",
-	BasePath:         "/",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Busha Movie API documentation",
 	Description:      "This documents all rest endpoints exposed by this application.",

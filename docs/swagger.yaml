@@ -1,4 +1,3 @@
-basePath: /
 definitions:
   model.AddCommentRequest:
     properties:
@@ -39,7 +38,7 @@ definitions:
         type: string
       message:
         type: string
-      swapi_movie_id:
+      movie_id:
         type: integer
       updated_at:
         type: string
@@ -79,15 +78,11 @@ definitions:
         example: "1977-05-25"
         type: string
     type: object
-host: localhost:9500
 info:
   contact:
     email: natorverinumbe@gmail.com
     name: Nator Verinumbe
   description: This documents all rest endpoints exposed by this application.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: Busha Movie API documentation
   version: 1.0.0
 paths:
