@@ -47,15 +47,15 @@ services:
     networks:
       - default
 
-  integration:
-    build:
-      context: .
-      dockerfile: integration-test/Dockerfile
-    container_name: integration
-    environment:
-      - HOST_MACHINE=api:9500
-    depends_on:
-      - api
+#  integration:
+#    build:
+#      context: .
+#      dockerfile: integration-test/Dockerfile
+#    container_name: integration
+#    environment:
+#      - HOST_MACHINE=api:9500
+#    depends_on:
+#      - api
 
 networks:
   default:

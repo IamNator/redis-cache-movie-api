@@ -130,7 +130,7 @@ func TestAddCommentToMovie(t *testing.T) {
 		Send().Headers("Accept").Add("application/json"),
 		Send().Body().JSON(body),
 		Expect().Headers("Content-Type").Equal("application/json"),
-		Expect().Status().OneOf(http.StatusCreated, http.StatusNotFound, http.StatusOK),
+		Expect().Status().OneOf(http.StatusOK, http.StatusNotFound),
 		Expect().Body().JSON().Contains("code", "message"),
 	)
 }

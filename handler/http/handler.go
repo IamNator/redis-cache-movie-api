@@ -72,8 +72,9 @@ func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
 	if err == nil {
 		err = errors.New(msg)
 	}
-
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+
 	_ = json.NewEncoder(w).Encode(model.GenericResponse{
 		Error:   err.Error(),
 		Data:    nil,
@@ -84,6 +85,7 @@ func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
 
 func respondWithSuccess(w http.ResponseWriter, code int, msg string, count int64, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
 	_ = json.NewEncoder(w).Encode(model.GenericResponse{
 		Error:   "",
 		Code:    code, //
@@ -333,5 +335,4 @@ func (h handlers) addCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithSuccess(w, http.StatusCreated, "Comment added successfully", 0, nil)
-
 }
