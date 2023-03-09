@@ -2,6 +2,10 @@ BUSHA MOVIE API
 
 [Documentation](https://busha-movie-api-v1.herokuapp.com/docs)
 
+`` 
+<host>/docs
+ ``
+
 ### Getting Started (Development)
 
 1. Install dev tools
